@@ -1,0 +1,16 @@
+/* Đặt lại một số style mặc định và thêm style cơ bản cho toàn bộ trang */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  background: #f9f9f9;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+* {
+  box-sizing: inherit;
+} 
