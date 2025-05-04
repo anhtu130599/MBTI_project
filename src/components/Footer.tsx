@@ -31,16 +31,16 @@ const Footer = () => {
             <Typography variant="h6" gutterBottom>
               Liên kết nhanh
             </Typography>
-            <Link href="/" color="inherit" display="block" sx={{ mb: 1 }}>
+            <Link href="/" color="inherit" display="block" sx={{ mb: 1, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
               Trang chủ
             </Link>
-            <Link href="/quiz" color="inherit" display="block" sx={{ mb: 1 }}>
+            <Link href="/quiz" color="inherit" display="block" sx={{ mb: 1, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
               Làm bài kiểm tra
             </Link>
-            <Link href="/about" color="inherit" display="block" sx={{ mb: 1 }}>
+            <Link href="/about" color="inherit" display="block" sx={{ mb: 1, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
               Về chúng tôi
             </Link>
-            <Link href="/contact" color="inherit" display="block">
+            <Link href="/contact" color="inherit" display="block" sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
               Liên hệ
             </Link>
           </Grid>

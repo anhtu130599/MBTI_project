@@ -38,65 +38,76 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static">
-      <Container maxWidth="lg">
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, cursor: 'pointer' }}
-            onClick={() => router.push('/')}
-          >
-            MBTI Test
-          </Typography>
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button color="inherit" onClick={() => router.push('/about')}>
-              Giới thiệu
-            </Button>
-            <Button color="inherit" onClick={() => router.push('/test')}>
-              Làm bài kiểm tra
-            </Button>
-            <Button color="inherit" onClick={() => router.push('/personality-types')}>
-              Các loại tính cách
-            </Button>
-            <Button color="inherit" onClick={() => router.push('/careers')}>
-              Danh sách nghề nghiệp
-            </Button>
-          </Box>
-
-          <Box sx={{ ml: 2 }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
+    <Box
+      component="header"
+      sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: (theme) => theme.zIndex.appBar,
+        bgcolor: 'background.paper',
+        boxShadow: 1,
+      }}
+    >
+      <AppBar position="static">
+        <Container maxWidth="lg">
+          <Toolbar disableGutters>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ flexGrow: 1, cursor: 'pointer' }}
+              onClick={() => router.push('/')}
             >
-              <AccountCircle />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem onClick={handleLogin}>Đăng nhập</MenuItem>
-              <MenuItem onClick={handleRegister}>Đăng ký</MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+              MBTI Test
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button color="inherit" onClick={() => router.push('/about')}>
+                Giới thiệu
+              </Button>
+              <Button color="inherit" onClick={() => router.push('/test')}>
+                Làm bài kiểm tra
+              </Button>
+              <Button color="inherit" onClick={() => router.push('/personality-types')}>
+                Các loại tính cách
+              </Button>
+              <Button color="inherit" onClick={() => router.push('/careers')}>
+                Danh sách nghề nghiệp
+              </Button>
+            </Box>
+
+            <Box sx={{ ml: 2 }}>
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
+                color="inherit"
+              >
+                <AccountCircle />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleLogin}>Đăng nhập</MenuItem>
+                <MenuItem onClick={handleRegister}>Đăng ký</MenuItem>
+              </Menu>
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+    </Box>
   );
 } 
