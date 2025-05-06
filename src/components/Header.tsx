@@ -1,23 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
-  Toolbar,
-  Typography,
-  Button,
   Box,
+  Button,
+  Container,
   IconButton,
   Menu,
   MenuItem,
-  Container,
+  Toolbar,
+  Typography,
 } from '@mui/material';
-import { useRouter } from 'next/navigation';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useRouter } from 'next/navigation';
+import AuthModals from './AuthModals';
 
-export default function Header() {
+const Header = () => {
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -28,13 +31,19 @@ export default function Header() {
   };
 
   const handleLogin = () => {
+    setAuthModalTab('login');
+    setAuthModalOpen(true);
     handleClose();
-    router.push('/login');
   };
 
   const handleRegister = () => {
+    setAuthModalTab('register');
+    setAuthModalOpen(true);
     handleClose();
-    router.push('/register');
+  };
+
+  const handleCloseAuthModal = () => {
+    setAuthModalOpen(false);
   };
 
   return (
@@ -75,7 +84,7 @@ export default function Header() {
               </Button>
             </Box>
 
-            <Box sx={{ ml: 2 }}>
+            <Box>
               <IconButton
                 size="large"
                 aria-label="account of current user"
@@ -108,6 +117,14 @@ export default function Header() {
           </Toolbar>
         </Container>
       </AppBar>
+
+      <AuthModals
+        open={authModalOpen}
+        onClose={handleCloseAuthModal}
+        initialTab={authModalTab}
+      />
     </Box>
   );
-} 
+};
+
+export default Header; 
