@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -29,8 +29,36 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
     name: '',
   });
 
+  // Reset everything when initialTab changes
+  useEffect(() => {
+    setActiveTab(initialTab);
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      name: '',
+    });
+  }, [initialTab]);
+
+  const handleClose = () => {
+    setActiveTab(initialTab);
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      name: '',
+    });
+    onClose();
+  };
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: 'login' | 'register') => {
     setActiveTab(newValue);
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      name: '',
+    });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,13 +76,13 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">
             {activeTab === 'login' ? 'Đăng nhập' : 'Đăng ký'}
           </Typography>
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={handleClose} size="small">
             <CloseIcon />
           </IconButton>
         </Box>
@@ -118,7 +146,7 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
             />
           )}
           <DialogActions>
-            <Button onClick={onClose}>Hủy</Button>
+            <Button onClick={handleClose}>Hủy</Button>
             <Button type="submit" variant="contained" color="primary">
               {activeTab === 'login' ? 'Đăng nhập' : 'Đăng ký'}
             </Button>

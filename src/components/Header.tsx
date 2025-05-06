@@ -6,40 +6,25 @@ import {
   Box,
   Button,
   Container,
-  IconButton,
-  Menu,
-  MenuItem,
   Toolbar,
   Typography,
 } from '@mui/material';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useRouter } from 'next/navigation';
 import AuthModals from './AuthModals';
 
 const Header = () => {
   const router = useRouter();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
   const handleLogin = () => {
     setAuthModalTab('login');
     setAuthModalOpen(true);
-    handleClose();
   };
 
   const handleRegister = () => {
     setAuthModalTab('register');
     setAuthModalOpen(true);
-    handleClose();
   };
 
   const handleCloseAuthModal = () => {
@@ -82,37 +67,12 @@ const Header = () => {
               <Button color="inherit" onClick={() => router.push('/careers')}>
                 Danh sách nghề nghiệp
               </Button>
-            </Box>
-
-            <Box>
-              <IconButton
-                size="large"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleMenu}
-                color="inherit"
-              >
-                <AccountCircle />
-              </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem onClick={handleLogin}>Đăng nhập</MenuItem>
-                <MenuItem onClick={handleRegister}>Đăng ký</MenuItem>
-              </Menu>
+              <Button color="inherit" onClick={handleLogin}>
+                Đăng nhập
+              </Button>
+              <Button color="inherit" onClick={handleRegister}>
+                Đăng ký
+              </Button>
             </Box>
           </Toolbar>
         </Container>
