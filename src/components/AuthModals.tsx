@@ -13,6 +13,7 @@ import {
   Tabs,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { useRouter } from 'next/navigation';
 
 interface AuthModalsProps {
   open: boolean;
@@ -27,7 +28,10 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
     password: '',
     confirmPassword: '',
     name: '',
+    username: '',
   });
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   // Reset everything when initialTab changes
   useEffect(() => {
@@ -37,6 +41,7 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
       password: '',
       confirmPassword: '',
       name: '',
+      username: '',
     });
   }, [initialTab]);
 
@@ -47,6 +52,7 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
       password: '',
       confirmPassword: '',
       name: '',
+      username: '',
     });
     onClose();
   };
@@ -58,6 +64,7 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
       password: '',
       confirmPassword: '',
       name: '',
+      username: '',
     });
   };
 
@@ -69,10 +76,31 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Xử lý logic đăng nhập/đăng ký ở đây
-    console.log('Form submitted:', formData);
+    if (activeTab === 'login') {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('mbti_user', JSON.stringify(data)); // Lưu user vào localStorage
+        onClose(); // Đóng modal
+        if (data.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
+      } else {
+        setError(data.error || 'Đăng nhập thất bại');
+      }
+    }
+    // ...xử lý đăng ký như cũ
   };
 
   return (
@@ -110,17 +138,31 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
               required
             />
           )}
-          <TextField
-            margin="dense"
-            name="email"
-            label="Email"
-            type="email"
-            fullWidth
-            variant="outlined"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-          />
+          {activeTab === 'login' ? (
+            <TextField
+              margin="dense"
+              name="username"
+              label="Tên đăng nhập"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={formData.username || ''}
+              onChange={handleInputChange}
+              required
+            />
+          ) : (
+            <TextField
+              margin="dense"
+              name="email"
+              label="Email"
+              type="email"
+              fullWidth
+              variant="outlined"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          )}
           <TextField
             margin="dense"
             name="password"
