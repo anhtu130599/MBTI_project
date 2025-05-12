@@ -87,6 +87,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Kiểm tra userId (chỉ cho phép lưu khi đã đăng nhập)
+    if (!data.userId) {
+      // TODO: Sau này xác thực user thực tế (JWT/session)
+      return NextResponse.json(
+        { error: 'Bạn cần đăng nhập để lưu kết quả.' },
+        { status: 401 }
+      );
+    }
+    
     // Kết nối database
     await dbConnect();
     
