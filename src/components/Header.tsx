@@ -22,22 +22,25 @@ const Header = () => {
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
   const [user, setUser] = useState<any>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Lấy user từ localStorage nếu có
-    const storedUser = localStorage.getItem('mbti_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      setUser(null);
+    async function fetchUser() {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+      setLoading(false);
     }
-    // Lắng nghe sự kiện storage để cập nhật user khi đăng xuất ở tab khác
-    const handleStorageChange = () => {
-      const updatedUser = localStorage.getItem('mbti_user');
-      setUser(updatedUser ? JSON.parse(updatedUser) : null);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    fetchUser();
   }, [authModalOpen]);
 
   const handleLogin = () => {
@@ -52,11 +55,7 @@ const Header = () => {
 
   const handleCloseAuthModal = () => {
     setAuthModalOpen(false);
-    // Sau khi modal đóng, reload user
-    const storedUser = localStorage.getItem('mbti_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Không cần lấy user từ localStorage nữa, user sẽ được fetch lại từ API khi modal đóng hoặc reload trang
   };
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -69,7 +68,6 @@ const Header = () => {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    localStorage.removeItem('mbti_user');
     setUser(null);
     setAnchorEl(null);
     router.push('/');
@@ -111,13 +109,16 @@ const Header = () => {
               <Button color="inherit" onClick={() => router.push('/careers')}>
                 Danh sách nghề nghiệp
               </Button>
-              {user ? (
+              {loading ? null : user ? (
                 <>
                   <IconButton onClick={handleAvatarClick} size="small">
                     <Avatar>{user.username ? user.username[0].toUpperCase() : '?'}</Avatar>
                   </IconButton>
                   <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                     <MenuItem disabled>{user.username}</MenuItem>
+                    <MenuItem onClick={() => { router.push('/profile'); setAnchorEl(null); }}>
+                      Hồ sơ cá nhân
+                    </MenuItem>
                     {user.role === 'admin' && (
                       <MenuItem onClick={() => { router.push('/admin'); setAnchorEl(null); }}>
                         Trang quản trị

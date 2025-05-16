@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -59,6 +59,19 @@ export default function TestPage() {
     answers: {},
     completed: false,
   });
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [lastResult, setLastResult] = useState<any>(null);
+  const [loadingLastResult, setLoadingLastResult] = useState(true);
+  let userId: string | undefined = undefined;
+  if (typeof window !== 'undefined') {
+    const userStr = localStorage.getItem('mbti_user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      userId = user.id;
+    }
+  }
 
   const handleStart = () => {
     setShowIntroduction(false);
@@ -117,6 +130,49 @@ export default function TestPage() {
     }
   };
 
+  useEffect(() => {
+    async function fetchUser() {
+      setLoadingUser(true);
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+      setLoadingUser(false);
+    }
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setLastResult(null);
+      setLoadingLastResult(false);
+      return;
+    }
+    async function fetchLastResult() {
+      setLoadingLastResult(true);
+      try {
+        const res = await fetch('/api/test/last', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setLastResult(data);
+        } else {
+          setLastResult(null);
+        }
+      } catch {
+        setLastResult(null);
+      }
+      setLoadingLastResult(false);
+    }
+    fetchLastResult();
+  }, [user]);
+
   if (showIntroduction) {
     return <TestIntroduction config={testConfig} onStart={handleStart} />;
   }
@@ -126,10 +182,6 @@ export default function TestPage() {
   const currentGroup = testConfig.groups.find(group => group.category === currentQuestion.category);
 
   if (testState.completed && testState.result) {
-    // TODO: Lấy userId từ hệ thống user thực tế khi phát triển (hiện tại luôn là undefined)
-    const userId = undefined;
-    const [saveMessage, setSaveMessage] = useState<string | null>(null);
-
     const handleRestart = () => {
       setTestState({
         currentQuestion: 0,
@@ -156,13 +208,24 @@ export default function TestPage() {
     };
 
     const handleSaveResult = async () => {
-      if (!userId) {
-        setSaveMessage('Bạn cần đăng nhập để lưu kết quả!');
-        return;
+      try {
+        const response = await fetch('/api/test/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            personalityType: testState.result.type
+          }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setSaveMessage('Đã lưu kết quả thành công!');
+        } else {
+          setSaveMessage(data.error || 'Lưu kết quả thất bại!');
+        }
+      } catch (error) {
+        setSaveMessage('Lỗi khi lưu kết quả!');
       }
-      // TODO: Gọi API lưu kết quả với userId khi đã có hệ thống user
-      // await saveTestResult({ userId, ... });
-      setSaveMessage('Đã lưu kết quả thành công!');
     };
 
     return (
@@ -245,6 +308,43 @@ export default function TestPage() {
           </Card>
           {mbtiDescriptions[testState.result.type] && (
             <MBTIDetailAccordion detail={mbtiDescriptions[testState.result.type]} />
+          )}
+        </Box>
+      </Container>
+    );
+  }
+
+  // Nếu user đã đăng nhập, không có testState.result nhưng có lastResult, hiển thị lại kết quả cuối cùng
+  if (!testState.completed && user && lastResult) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Box sx={{ mb: 2, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {mbtiIcons[lastResult.personalityType]}
+            <Typography variant="h3" color="primary" gutterBottom sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
+              {lastResult.personalityType}
+            </Typography>
+            <Typography variant="h5" gutterBottom>
+              {/* Có thể thêm mô tả nếu muốn */}
+            </Typography>
+          </Box>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            Ngày làm: {new Date(lastResult.timestamp).toLocaleString()}
+          </Typography>
+          <Card sx={{ width: '100%', maxWidth: 600, mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Nghề nghiệp phù hợp
+              </Typography>
+              <ul>
+                {lastResult.careerRecommendations.map((career: string, idx: number) => (
+                  <li key={idx}>{career}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+          {mbtiDescriptions[lastResult.personalityType] && (
+            <MBTIDetailAccordion detail={mbtiDescriptions[lastResult.personalityType]} />
           )}
         </Box>
       </Container>

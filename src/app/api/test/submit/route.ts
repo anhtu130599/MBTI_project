@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import TestResult from '@/models/TestResult';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Hàm tính toán loại tính cách MBTI dựa trên câu trả lời
 function calculateMBTI(answers: Record<string, number>): {
@@ -78,52 +81,51 @@ function getCareerRecommendations(personalityType: string): string[] {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    
     // Kiểm tra dữ liệu đầu vào
-    if (!data.answers || typeof data.answers !== 'object') {
+    if (!data.personalityType || typeof data.personalityType !== 'string') {
       return NextResponse.json(
-        { error: 'Invalid request format. Expected answers object.' },
+        { error: 'Thiếu hoặc sai định dạng personalityType.' },
         { status: 400 }
       );
     }
-    
-    // Kiểm tra userId (chỉ cho phép lưu khi đã đăng nhập)
-    if (!data.userId) {
-      // TODO: Sau này xác thực user thực tế (JWT/session)
+    // Lấy userId từ JWT
+    const cookieStore = cookies();
+    const token = cookieStore.get('auth-token')?.value;
+    if (!token) {
       return NextResponse.json(
         { error: 'Bạn cần đăng nhập để lưu kết quả.' },
         { status: 401 }
       );
     }
-    
-    // Kết nối database
+    let payload;
+    try {
+      payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
+    } catch {
+      return NextResponse.json(
+        { error: 'Token không hợp lệ.' },
+        { status: 401 }
+      );
+    }
+    const userId = payload.payload.id;
     await dbConnect();
-    
-    // Tính toán loại tính cách MBTI và điểm số
-    const result = calculateMBTI(data.answers);
-    const personalityType = result.type;
-    
-    // Lấy thông tin nghề nghiệp phù hợp
-    const careerRecommendations = getCareerRecommendations(personalityType);
-    
-    // Lưu kết quả vào database
-    const testResult = await TestResult.create({
-      personalityType,
-      answers: data.answers,
-      scores: result.scores,
-      userId: data.userId || null,
-      careerRecommendations
-    });
-    
-    // Trả về kết quả
+    // Lấy gợi ý nghề nghiệp
+    const careerRecommendations = getCareerRecommendations(data.personalityType);
+    // Tìm và cập nhật hoặc tạo mới kết quả cuối cùng
+    const testResult = await TestResult.findOneAndUpdate(
+      { userId },
+      {
+        personalityType: data.personalityType,
+        userId,
+        careerRecommendations
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
     return NextResponse.json({
       id: testResult._id,
-      personalityType,
-      scores: result.scores,
-      careerRecommendations,
+      personalityType: testResult.personalityType,
+      careerRecommendations: testResult.careerRecommendations,
       timestamp: testResult.createdAt
     });
-    
   } catch (error) {
     console.error('Error processing test submission:', error);
     return NextResponse.json(

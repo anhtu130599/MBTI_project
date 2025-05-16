@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import jwt from 'jsonwebtoken';
+// TODO: Cấu hình thư viện gửi email (ví dụ: nodemailer)
+const EMAIL_VERIFY_SECRET = process.env.EMAIL_VERIFY_SECRET || 'verify-secret';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+async function sendVerifyEmail(email: string, token: string) {
+  const verifyUrl = `${BASE_URL}/verify-email?token=${token}`;
+  // TODO: Gửi email thực tế bằng nodemailer hoặc dịch vụ email
+  console.log(`[DEBUG] Gửi email xác nhận tới ${email}: ${verifyUrl}`);
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,6 +47,14 @@ export async function POST(request: NextRequest) {
       // Chỉ cho phép tạo admin nếu đã xác thực là admin
       role: role === 'admin' ? 'admin' : 'user'
     });
+    
+    // Tạo token xác nhận email
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email },
+      EMAIL_VERIFY_SECRET,
+      { expiresIn: '1d' }
+    );
+    await sendVerifyEmail(newUser.email, token);
     
     // Trả về thông tin người dùng (không bao gồm mật khẩu)
     const userResponse = {

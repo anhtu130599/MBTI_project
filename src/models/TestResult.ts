@@ -10,24 +10,10 @@ const TestResultSchema = new Schema({
     maxlength: 4,
     minlength: 4
   },
-  answers: {
-    type: Map,
-    of: Number,
-    required: true
-  },
-  scores: {
-    e: Number,
-    i: Number,
-    s: Number,
-    n: Number,
-    t: Number,
-    f: Number,
-    j: Number,
-    p: Number
-  },
   userId: {
     type: String,
-    default: null
+    required: true,
+    unique: true // Mỗi user chỉ có 1 kết quả cuối cùng
   },
   careerRecommendations: {
     type: [String],

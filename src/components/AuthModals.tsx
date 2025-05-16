@@ -89,18 +89,30 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
       });
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('mbti_user', JSON.stringify(data)); // Lưu user vào localStorage
         onClose(); // Đóng modal
-        if (data.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/');
-        }
+        window.location.reload(); // Reload lại trang để Header đồng bộ trạng thái đăng nhập
       } else {
         setError(data.error || 'Đăng nhập thất bại');
       }
+    } else if (activeTab === 'register') {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        onClose(); // Đóng modal
+        window.location.reload(); // Reload lại trang để Header đồng bộ trạng thái đăng nhập
+      } else {
+        setError(data.error || 'Đăng ký thất bại');
+      }
     }
-    // ...xử lý đăng ký như cũ
   };
 
   return (
@@ -126,17 +138,31 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, initialTab = 'lo
       <DialogContent>
         <form onSubmit={handleSubmit}>
           {activeTab === 'register' && (
-            <TextField
-              margin="dense"
-              name="name"
-              label="Họ và tên"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-            />
+            <>
+              <TextField
+                margin="dense"
+                name="name"
+                label="Họ và tên"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                margin="dense"
+                name="username"
+                label="Tên đăng nhập"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formData.username || ''}
+                onChange={handleInputChange}
+                required
+                inputProps={{ minLength: 3 }}
+              />
+            </>
           )}
           {activeTab === 'login' ? (
             <TextField

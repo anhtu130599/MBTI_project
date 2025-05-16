@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     
     // Tạo JWT token
     const token = await new SignJWT({
-      id: user._id,
+      id: user._id.toString(),
       username: user.username,
       role: user.role
     })
@@ -57,16 +57,6 @@ export async function POST(request: NextRequest) {
       .setIssuedAt()
       .setExpirationTime('24h')
       .sign(new TextEncoder().encode(JWT_SECRET));
-    
-    // Lưu token vào cookie
-    cookies().set({
-      name: 'auth-token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24, // 1 ngày
-      path: '/'
-    });
     
     // Trả về thông tin người dùng (không bao gồm mật khẩu)
     const userResponse = {
@@ -76,7 +66,16 @@ export async function POST(request: NextRequest) {
       role: user.role
     };
     
-    return NextResponse.json(userResponse);
+    // Lưu token vào cookie
+    const response = NextResponse.json(userResponse);
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: false, // Để false khi phát triển trên localhost
+      maxAge: 60 * 60 * 24,
+      path: '/',
+      sameSite: 'lax',
+    });
+    return response;
   } catch (error) {
     console.error('Error logging in:', error);
     return NextResponse.json(

@@ -31,6 +31,10 @@ const UserSchema = new Schema({
   lastLogin: {
     type: Date,
     default: null
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
