@@ -12,27 +12,14 @@ const mbtiPairs = [
 // Tạo Map để truy xuất câu hỏi theo id (string)
 const questionMap = new Map<string, Question>(questions.map(q => [q.id, q]));
 
-export function calculateMBTIResult(answers: Record<string, string>): string {
-  // Khởi tạo điểm cho từng cặp
-  const score: Record<string, number> = {
-    EI: 0,
-    SN: 0,
-    TF: 0,
-    JP: 0,
-  };
-
-  // Tính điểm cho từng cặp tính cách
-  Object.entries(answers).forEach(([questionId, answer]) => {
-    const question = questionMap.get(questionId); // id là string
-    if (question) {
-      const pair = mbtiPairs.find(p => p.key === question.category);
-      if (pair) {
-        score[pair.key] += answer === pair.positive ? 1 : -1;
-      }
+export function calculateMBTIResult(answers: Record<string, string>, questions: { _id: string, category: string }[]): string {
+  const score: Record<string, number> = { EI: 0, SN: 0, TF: 0, JP: 0 };
+  questions.forEach(q => {
+    const answer = answers[q._id];
+    const pair = mbtiPairs.find(p => p.key === q.category);
+    if (answer && pair) {
+      score[pair.key] += answer === pair.positive ? 1 : -1;
     }
   });
-
-  // Xác định kết quả MBTI dựa trên điểm số
-  const result = mbtiPairs.map(pair => (score[pair.key] >= 0 ? pair.positive : pair.negative)).join('');
-  return result;
+  return mbtiPairs.map(pair => (score[pair.key] >= 0 ? pair.positive : pair.negative)).join('');
 } 

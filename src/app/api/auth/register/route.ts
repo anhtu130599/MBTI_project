@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-// TODO: Cấu hình thư viện gửi email (ví dụ: nodemailer)
-const EMAIL_VERIFY_SECRET = process.env.EMAIL_VERIFY_SECRET || 'verify-secret';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+import nodemailer from 'nodemailer';
 
-async function sendVerifyEmail(email: string, token: string) {
-  const verifyUrl = `${BASE_URL}/verify-email?token=${token}`;
-  // TODO: Gửi email thực tế bằng nodemailer hoặc dịch vụ email
-  console.log(`[DEBUG] Gửi email xác nhận tới ${email}: ${verifyUrl}`);
-}
+// Cấu hình transporter cho nodemailer
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,29 +43,50 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Tạo token xác thực
+    const verificationToken = jwt.sign(
+      { email },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+    
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 giờ
+    
     // Tạo người dùng mới
     const newUser = await User.create({
       username,
       email,
       password,
-      // Chỉ cho phép tạo admin nếu đã xác thực là admin
-      role: role === 'admin' ? 'admin' : 'user'
+      role: role === 'admin' ? 'admin' : 'user',
+      emailVerified: false,
+      verificationToken,
+      verificationTokenExpires
     });
     
-    // Tạo token xác nhận email
-    const token = jwt.sign(
-      { id: newUser._id, email: newUser.email },
-      EMAIL_VERIFY_SECRET,
-      { expiresIn: '1d' }
-    );
-    await sendVerifyEmail(newUser.email, token);
+    // Gửi email xác thực
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}`;
     
-    // Trả về thông tin người dùng (không bao gồm mật khẩu)
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: 'Xác thực email của bạn',
+      html: `
+        <h1>Xác thực email</h1>
+        <p>Xin chào ${username},</p>
+        <p>Cảm ơn bạn đã đăng ký tài khoản. Vui lòng click vào link dưới đây để xác thực email của bạn:</p>
+        <a href="${verificationUrl}">${verificationUrl}</a>
+        <p>Link này sẽ hết hạn sau 24 giờ.</p>
+        <p>Nếu bạn không yêu cầu đăng ký tài khoản này, vui lòng bỏ qua email này.</p>
+      `
+    });
+    
+    // Trả về thông tin người dùng
     const userResponse = {
       id: newUser._id,
       username: newUser.username,
       email: newUser.email,
       role: newUser.role,
+      emailVerified: newUser.emailVerified,
       createdAt: newUser.createdAt
     };
     

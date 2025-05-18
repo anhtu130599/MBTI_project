@@ -1,45 +1,44 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-// Định nghĩa schema cho loại tính cách MBTI
-const PersonalityTypeSchema = new Schema({
-  id: {
+const personalityTypeSchema = new mongoose.Schema({
+  type: {
     type: String,
     required: true,
-    unique: true,
-    trim: true,
     uppercase: true,
-    maxlength: 4,
-    minlength: 4
   },
-  name: {
+  title: {
     type: String,
     required: true,
-    trim: true
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
-  strengths: {
-    type: [String],
-    default: []
+  strengths: [{
+    type: String,
+  }],
+  weaknesses: [{
+    type: String,
+  }],
+  careers: [{
+    type: String,
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  weaknesses: {
-    type: [String],
-    default: []
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
-  careers: {
-    type: [String],
-    default: []
-  },
-  famousPeople: {
-    type: [String],
-    default: []
-  }
 }, {
-  timestamps: true
+  _id: true,
+  id: false,
+  timestamps: true,
 });
 
-// Kiểm tra xem model đã tồn tại chưa để tránh lỗi khi hot reload
-export default mongoose.models.PersonalityType || 
-  mongoose.model('PersonalityType', PersonalityTypeSchema); 
+personalityTypeSchema.index({ type: 1 }, { unique: true });
+
+const PersonalityType = mongoose.models.PersonalityType || mongoose.model('PersonalityType', personalityTypeSchema);
+
+export default PersonalityType; 

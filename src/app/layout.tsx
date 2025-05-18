@@ -4,6 +4,7 @@ import './globals.css'
 import ClientThemeProvider from '@/components/ClientThemeProvider'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import SessionClientProvider from '@/components/SessionClientProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,19 +21,21 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
-        <ClientThemeProvider>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            minHeight: '100vh'
-          }}>
-            <Header />
-            <main style={{ flex: 1 }}>
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </ClientThemeProvider>
+        <SessionClientProvider>
+          <ClientThemeProvider>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              minHeight: '100vh'
+            }}>
+              <Header />
+              <main style={{ flex: 1 }}>
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </ClientThemeProvider>
+        </SessionClientProvider>
       </body>
     </html>
   )

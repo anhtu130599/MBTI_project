@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -15,6 +15,11 @@ import {
   Card,
   CardContent,
   Button,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { questions } from '@/data/questions';
 import { TestState } from '@/types/mbti';
@@ -39,6 +44,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import StarIcon from '@mui/icons-material/Star';
 import MBTIDetailAccordion from '@/components/test/MBTIDetailAccordion';
 import { mbtiDescriptions } from '@/data/mbtiDescriptions';
+import { useRouter } from 'next/navigation';
 
 const mbtiIcons: Record<string, JSX.Element> = {
   ENTJ: <SupervisorAccountIcon sx={{ fontSize: 64, color: '#1976d2' }} />,
@@ -52,6 +58,17 @@ const mbtiIcons: Record<string, JSX.Element> = {
   // Các nhóm còn lại có thể dùng lại icon hoặc chọn thêm sau
 };
 
+interface Option {
+  text: string;
+  value: string;
+}
+interface Question {
+  _id: string;
+  text: string;
+  options: Option[];
+  order: number;
+}
+
 export default function TestPage() {
   const [showIntroduction, setShowIntroduction] = useState(true);
   const [testState, setTestState] = useState<TestState>({
@@ -64,6 +81,10 @@ export default function TestPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [lastResult, setLastResult] = useState<any>(null);
   const [loadingLastResult, setLoadingLastResult] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   let userId: string | undefined = undefined;
   if (typeof window !== 'undefined') {
     const userStr = localStorage.getItem('mbti_user');
@@ -83,7 +104,7 @@ export default function TestPage() {
   const handleAnswer = (value: string) => {
     const newAnswers = {
       ...testState.answers,
-      [questions[testState.currentQuestion].id]: value,
+      [questions[testState.currentQuestion]._id]: value,
     };
 
     setTestState({
@@ -99,7 +120,7 @@ export default function TestPage() {
         currentQuestion: testState.currentQuestion + 1,
       });
     } else {
-      const result = calculateMBTIResult(testState.answers);
+      const result = calculateMBTIResult(testState.answers, questions);
       setTestState({
         ...testState,
         completed: true,
@@ -120,7 +141,7 @@ export default function TestPage() {
   const handleQuestionClick = (index: number) => {
     const canNavigate = questions
       .slice(0, index)
-      .every((q) => testState.answers[q.id]);
+      .every((q) => testState.answers[q._id]);
 
     if (canNavigate) {
       setTestState({
@@ -173,13 +194,52 @@ export default function TestPage() {
     fetchLastResult();
   }, [user]);
 
+  useEffect(() => {
+    fetch('/api/questions')
+      .then(res => res.json())
+      .then(data => {
+        setQuestions(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Không thể tải câu hỏi');
+        setLoading(false);
+      });
+  }, []);
+
   if (showIntroduction) {
-    return <TestIntroduction config={testConfig} onStart={handleStart} />;
+    // Tính số lượng câu hỏi động
+    const totalQuestions = questions.length;
+    // Tính thời gian dự kiến: 1-1.5 phút/câu
+    let duration = '';
+    if (totalQuestions > 0) {
+      const min = Math.ceil(totalQuestions * 1);
+      const max = Math.ceil(totalQuestions * 1.5);
+      duration = min === max ? `${min} phút` : `${min}-${max} phút`;
+    } else {
+      duration = testConfig.introduction.duration;
+    }
+    // Truyền props động vào TestIntroduction
+    return (
+      <TestIntroduction
+        config={{
+          ...testConfig,
+          introduction: {
+            ...testConfig.introduction,
+            totalQuestions,
+            duration,
+          },
+        }}
+        onStart={handleStart}
+      />
+    );
   }
 
   const progress = ((testState.currentQuestion + 1) / questions.length) * 100;
   const currentQuestion = questions[testState.currentQuestion];
-  const currentGroup = testConfig.groups.find(group => group.category === currentQuestion.category);
+  const currentGroup = currentQuestion && currentQuestion.category
+    ? testConfig.groups.find(group => group.category === currentQuestion.category)
+    : undefined;
 
   if (testState.completed && testState.result) {
     const handleRestart = () => {
@@ -314,41 +374,17 @@ export default function TestPage() {
     );
   }
 
-  // Nếu user đã đăng nhập, không có testState.result nhưng có lastResult, hiển thị lại kết quả cuối cùng
-  if (!testState.completed && user && lastResult) {
-    return (
-      <Container maxWidth="md">
-        <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box sx={{ mb: 2, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {mbtiIcons[lastResult.personalityType]}
-            <Typography variant="h3" color="primary" gutterBottom sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
-              {lastResult.personalityType}
-            </Typography>
-            <Typography variant="h5" gutterBottom>
-              {/* Có thể thêm mô tả nếu muốn */}
-            </Typography>
-          </Box>
-          <Typography variant="subtitle1" sx={{ mb: 2 }}>
-            Ngày làm: {new Date(lastResult.timestamp).toLocaleString()}
-          </Typography>
-          <Card sx={{ width: '100%', maxWidth: 600, mb: 3 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Nghề nghiệp phù hợp
-              </Typography>
-              <ul>
-                {lastResult.careerRecommendations.map((career: string, idx: number) => (
-                  <li key={idx}>{career}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-          {mbtiDescriptions[lastResult.personalityType] && (
-            <MBTIDetailAccordion detail={mbtiDescriptions[lastResult.personalityType]} />
-          )}
-        </Box>
-      </Container>
-    );
+  if (loading) return <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error">{error}</Alert>;
+
+  if (currentQuestion && !currentQuestion.category) {
+    <Alert severity="warning" sx={{ mb: 2 }}>
+      Câu hỏi này chưa có nhóm (category). Vui lòng cập nhật lại dữ liệu câu hỏi!
+    </Alert>
+  }
+
+  if (!currentQuestion) {
+    return <Alert severity="warning">Không có câu hỏi nào trong hệ thống. Vui lòng thêm câu hỏi ở trang quản trị viên!</Alert>;
   }
 
   return (
@@ -375,7 +411,7 @@ export default function TestPage() {
 
           <QuestionCard
             question={currentQuestion}
-            selectedAnswer={testState.answers[currentQuestion.id]}
+            selectedAnswer={testState.answers[currentQuestion._id]}
             onAnswer={handleAnswer}
             onNext={handleNext}
             onPrevious={handlePrevious}
@@ -401,7 +437,7 @@ export default function TestPage() {
               {questions.map((question, index) => {
                 const canNavigate = questions
                   .slice(0, index)
-                  .every((q) => testState.answers[q.id]);
+                  .every((q) => testState.answers[q._id]);
                 
                 return (
                   <ListItem key={index} disablePadding>
@@ -429,7 +465,7 @@ export default function TestPage() {
                           align: 'center',
                         }}
                       />
-                      {testState.answers[question.id] ? (
+                      {testState.answers[question._id] ? (
                         <CheckCircleIcon color="success" />
                       ) : (
                         <RadioButtonUncheckedIcon color="disabled" />

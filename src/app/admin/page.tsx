@@ -21,7 +21,8 @@ import {
   PeopleAlt as PeopleIcon,
   Psychology as PsychologyIcon,
   BarChart as ChartIcon,
-  ExitToApp as LogoutIcon
+  Work as WorkIcon,
+  Category as CategoryIcon
 } from '@mui/icons-material';
 
 interface AdminStats {
@@ -47,7 +48,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/admin/stats');
+        const response = await fetch('/api/admin/stats', { credentials: 'include' });
         
         if (!response.ok) {
           if (response.status === 401) {
@@ -122,6 +123,14 @@ export default function AdminDashboard() {
               <Typography variant="body2" color="text.secondary" align="center">
                 Tổng số người dùng đã đăng ký
               </Typography>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => router.push('/admin/users')}
+                >
+                  Quản lý người dùng
+                </Button>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -148,63 +157,95 @@ export default function AdminDashboard() {
         <Grid item xs={12} md={4}>
           <Card>
             <CardHeader 
-              title="Tính cách phổ biến" 
+              title="Loại tính cách phổ biến" 
               avatar={<ChartIcon color="primary" />}
             />
             <CardContent>
-              {stats?.popularTypes && stats.popularTypes.length > 0 ? (
-                <List dense>
-                  {stats.popularTypes.map((item, index) => (
-                    <ListItem key={item.type} divider={index < stats.popularTypes.length - 1}>
-                      <ListItemText 
-                        primary={item.type} 
-                        secondary={`${item.count} người dùng`} 
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" color="text.secondary" align="center">
-                  Chưa có dữ liệu
-                </Typography>
-              )}
+              <List>
+                {stats?.popularTypes.slice(0, 5).map((type) => (
+                  <ListItem key={type.type}>
+                    <ListItemText
+                      primary={type.type}
+                      secondary={`${type.count} người dùng`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Bài test gần đây */}
-        <Grid item xs={12}>
+        {/* Quản lý loại tính cách */}
+        <Grid item xs={12} md={6}>
           <Card>
-            <CardHeader title="Bài test gần đây" />
+            <CardHeader 
+              title="Quản lý loại tính cách" 
+              avatar={<CategoryIcon color="primary" />}
+            />
             <CardContent>
-              {stats?.recentTests && stats.recentTests.length > 0 ? (
-                <List>
-                  {stats.recentTests.map((test, index) => (
-                    <>
-                      <ListItem>
-                        <ListItemText
-                          primary={`Loại tính cách: ${test.personalityType}`}
-                          secondary={`Thời gian: ${new Date(test.createdAt).toLocaleString()}`}
-                        />
-                      </ListItem>
-                      {index < stats.recentTests.length - 1 && <Divider />}
-                    </>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" color="text.secondary" align="center">
-                  Chưa có bài test nào
-                </Typography>
-              )}
+              <Typography variant="body1" paragraph>
+                Quản lý thông tin chi tiết về các loại tính cách MBTI, bao gồm mô tả, điểm mạnh, điểm yếu và nghề nghiệp phù hợp.
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<CategoryIcon />}
+                onClick={() => router.push('/admin/personality-types')}
+                fullWidth
+              >
+                Chỉnh sửa danh sách loại tính cách
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Quản lý nghề nghiệp */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardHeader 
+              title="Quản lý nghề nghiệp" 
+              avatar={<WorkIcon color="primary" />}
+            />
+            <CardContent>
+              <Typography variant="body1" paragraph>
+                Quản lý thông tin về các nghề nghiệp phù hợp với từng loại tính cách, bao gồm mô tả, kỹ năng cần thiết và yêu cầu học vấn.
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<WorkIcon />}
+                onClick={() => router.push('/admin/careers')}
+                fullWidth
+              >
+                Chỉnh sửa danh sách nghề nghiệp
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Quản lý câu hỏi MBTI */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardHeader 
+              title="Quản lý câu hỏi MBTI" 
+              avatar={<PsychologyIcon color="primary" />}
+            />
+            <CardContent>
+              <Typography variant="body1" paragraph>
+                Quản lý nội dung câu hỏi và đáp án cho bài test MBTI. Có thể thêm, sửa, xóa và ẩn/hiện từng câu hỏi.
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<PsychologyIcon />}
+                onClick={() => router.push('/admin/questions')}
+                fullWidth
+              >
+                Chỉnh sửa câu hỏi MBTI
+              </Button>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
       <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-        <Button variant="contained" onClick={() => router.push('/admin/users')}>
-          Quản lý người dùng
-        </Button>
         <Button variant="contained" onClick={() => router.push('/admin/test-results')}>
           Xem kết quả test
         </Button>
