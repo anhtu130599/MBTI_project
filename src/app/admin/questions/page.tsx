@@ -110,6 +110,13 @@ export default function AdminQuestionsPage() {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
+      <Button
+        variant="outlined"
+        onClick={() => window.location.href = '/admin'}
+        sx={{ mb: 2 }}
+      >
+        Quay lại trang quản trị
+      </Button>
       <Typography variant="h4" gutterBottom>Quản lý câu hỏi MBTI</Typography>
       <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen(null)} sx={{ mb: 2 }}>
         Thêm câu hỏi

@@ -1,7 +1,8 @@
 export type MBTIType = 'INTJ' | 'INTP' | 'ENTJ' | 'ENTP' | 'INFJ' | 'INFP' | 'ENFJ' | 'ENFP' | 'ISTJ' | 'ISFJ' | 'ESTJ' | 'ESFJ' | 'ISTP' | 'ISFP' | 'ESTP' | 'ESFP';
 
 export interface Question {
-  id: string;
+  id?: string;
+  _id?: string;
   text: string;
   category: 'EI' | 'SN' | 'TF' | 'JP';
   options: {

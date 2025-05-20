@@ -193,6 +193,14 @@ export default function AdminCareersPage() {
         </Button>
       </Box>
 
+      <Button
+        variant="outlined"
+        onClick={() => router.push('/admin')}
+        sx={{ mb: 2 }}
+      >
+        Quay lại trang quản trị
+      </Button>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}

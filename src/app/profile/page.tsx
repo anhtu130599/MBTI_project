@@ -114,7 +114,6 @@ export default function ProfilePage() {
             {user.createdAt && (
               <Typography><b>Ngày tạo:</b> {new Date(user.createdAt).toLocaleDateString()}</Typography>
             )}
-            {user.role && <Typography><b>Vai trò:</b> {user.role}</Typography>}
             <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
               {editMode ? (
                 <>

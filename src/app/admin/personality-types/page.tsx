@@ -171,6 +171,13 @@ export default function AdminPersonalityTypesPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Button
+        variant="outlined"
+        onClick={() => router.push('/admin')}
+        sx={{ mb: 2 }}
+      >
+        Quay lại trang quản trị
+      </Button>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Quản lý loại tính cách

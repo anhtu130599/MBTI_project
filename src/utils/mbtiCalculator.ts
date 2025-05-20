@@ -1,5 +1,4 @@
 import { Question } from '@/types/mbti';
-import { questions } from '@/data/questions';
 
 // Cấu hình các cặp tính cách và giá trị tương ứng
 const mbtiPairs = [
@@ -10,7 +9,7 @@ const mbtiPairs = [
 ];
 
 // Tạo Map để truy xuất câu hỏi theo id (string)
-const questionMap = new Map<string, Question>(questions.map(q => [q.id, q]));
+const questionMap = new Map<string, Question>();
 
 export function calculateMBTIResult(answers: Record<string, string>, questions: { _id: string, category: string }[]): string {
   const score: Record<string, number> = { EI: 0, SN: 0, TF: 0, JP: 0 };

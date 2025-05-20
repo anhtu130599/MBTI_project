@@ -21,7 +21,6 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material';
-import { questions } from '@/data/questions';
 import { TestState } from '@/types/mbti';
 import { calculateMBTIResult } from '@/utils/mbtiCalculator';
 import { mbtiResults } from '@/data/results';
@@ -64,6 +63,8 @@ interface Option {
 }
 interface Question {
   _id: string;
+  id?: string;
+  category: string;
   text: string;
   options: Option[];
   order: number;
@@ -84,6 +85,7 @@ export default function TestPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [careers, setCareers] = useState<any[]>([]);
   const router = useRouter();
   let userId: string | undefined = undefined;
   if (typeof window !== 'undefined') {
@@ -121,10 +123,17 @@ export default function TestPage() {
       });
     } else {
       const result = calculateMBTIResult(testState.answers, questions);
+      // Lọc nghề nghiệp phù hợp từ database
+      const recommendedCareers = careers
+        .filter(career => career.personalityTypes && career.personalityTypes.includes(result))
+        .map(career => career.title);
       setTestState({
         ...testState,
         completed: true,
-        result: mbtiResults[result],
+        result: {
+          ...mbtiResults[result],
+          careers: recommendedCareers,
+        },
       });
     }
   };
@@ -205,6 +214,12 @@ export default function TestPage() {
         setError('Không thể tải câu hỏi');
         setLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/careers')
+      .then(res => res.json())
+      .then(data => setCareers(data));
   }, []);
 
   if (showIntroduction) {
