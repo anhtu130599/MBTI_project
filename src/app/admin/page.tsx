@@ -246,9 +246,6 @@ export default function AdminDashboard() {
       </Grid>
 
       <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-        <Button variant="contained" onClick={() => router.push('/admin/test-results')}>
-          Xem kết quả test
-        </Button>
       </Box>
     </Container>
   );

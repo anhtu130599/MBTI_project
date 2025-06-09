@@ -180,6 +180,13 @@ export default function AdminCareersPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Button
+        variant="outlined"
+        onClick={() => router.push('/admin')}
+        sx={{ mb: 2 }}
+      >
+        Quay lại trang quản trị
+      </Button>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Quản lý nghề nghiệp
@@ -192,14 +199,6 @@ export default function AdminCareersPage() {
           Thêm mới
         </Button>
       </Box>
-
-      <Button
-        variant="outlined"
-        onClick={() => router.push('/admin')}
-        sx={{ mb: 2 }}
-      >
-        Quay lại trang quản trị
-      </Button>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>

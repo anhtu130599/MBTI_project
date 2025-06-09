@@ -151,6 +151,14 @@ export default function AdminUsersPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Button
+        variant="outlined"
+        onClick={() => router.push('/admin')}
+        sx={{ mb: 2 }}
+      >
+        Quay lại trang quản trị
+      </Button>
+
       <Typography variant="h4" gutterBottom>
         Quản lý người dùng
       </Typography>

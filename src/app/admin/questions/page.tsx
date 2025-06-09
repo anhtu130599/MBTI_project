@@ -8,6 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Autocomplete from '@mui/material/Autocomplete';
+import { useRouter } from 'next/navigation';
 
 const VALUE_OPTIONS = [
   { label: 'E (Hướng ngoại)', value: 'E' },
@@ -26,6 +27,7 @@ export default function AdminQuestionsPage() {
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [form, setForm] = useState<any>({ text: '', options: [{ text: '', value: '' }, { text: '', value: '' }], isActive: true, category: '' });
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/admin/questions', { credentials: 'include' })
@@ -112,15 +114,24 @@ export default function AdminQuestionsPage() {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Button
         variant="outlined"
-        onClick={() => window.location.href = '/admin'}
+        onClick={() => router.push('/admin')}
         sx={{ mb: 2 }}
       >
         Quay lại trang quản trị
       </Button>
-      <Typography variant="h4" gutterBottom>Quản lý câu hỏi MBTI</Typography>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen(null)} sx={{ mb: 2 }}>
-        Thêm câu hỏi
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Quản lý câu hỏi MBTI
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpen(null)}
+        >
+          Thêm mới
+        </Button>
+      </Box>
+
       {questions.length === 0 && (
         <Typography color="text.secondary" align="center" sx={{ my: 2 }}>
           Chưa có câu hỏi nào.

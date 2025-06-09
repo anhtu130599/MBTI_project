@@ -64,7 +64,7 @@ interface Option {
 interface Question {
   _id: string;
   id?: string;
-  category: string;
+  category: "EI" | "SN" | "TF" | "JP";
   text: string;
   options: Option[];
   order: number;
@@ -269,6 +269,7 @@ export default function TestPage() {
     };
 
     const handleShare = () => {
+      if (!testState.result) return;
       const shareText = `Kết quả MBTI của tôi là ${testState.result.type}: ${testState.result.description}`;
       if (navigator.share) {
         navigator.share({
@@ -283,6 +284,7 @@ export default function TestPage() {
     };
 
     const handleSaveResult = async () => {
+      if (!testState.result) return;
       try {
         const response = await fetch('/api/test/submit', {
           method: 'POST',
