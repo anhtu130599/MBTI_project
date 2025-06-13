@@ -1,252 +1,194 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  Box,
-  Typography,
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Grid, 
   Container,
-  Grid,
   Card,
   CardContent,
-  CardHeader,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Button,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from '@mui/material';
-import {
-  PeopleAlt as PeopleIcon,
-  Psychology as PsychologyIcon,
-  BarChart as ChartIcon,
-  Work as WorkIcon,
-  Category as CategoryIcon
+import { 
+  People, 
+  Quiz, 
+  Psychology,
+  Work,
+  TrendingUp, 
+  AdminPanelSettings 
 } from '@mui/icons-material';
 
 interface AdminStats {
-  userCount: number;
-  testCount: number;
-  popularTypes: Array<{
-    type: string;
-    count: number;
-  }>;
-  recentTests: Array<{
-    id: string;
-    personalityType: string;
-    createdAt: string;
-  }>;
+  totalUsers: number;
+  totalTestsCompleted: number;
+  totalQuestions: number;
+  totalPersonalityTypes: number;
+  totalCareers: number;
+  recentTestsCount: number;
+  growthPercentage: number;
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch('/api/admin/stats', { credentials: 'include' });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            // Nếu không có quyền, chuyển hướng đến trang đăng nhập
-            router.push('/login');
-            return;
-          }
-          throw new Error('Không thể tải dữ liệu');
-        }
-        
-        const data = await response.json();
-        setStats(data);
-      } catch (err: any) {
-        setError(err.message || 'Đã xảy ra lỗi');
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchAdminStats();
+  }, []);
 
-    fetchStats();
-  }, [router]);
-
-  const handleLogout = async () => {
+  const fetchAdminStats = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST'
+      const response = await fetch('/api/admin/stats', {
+        credentials: 'include'
       });
-      router.push('/login');
-    } catch (error) {
-      console.error('Lỗi đăng xuất:', error);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch admin stats');
+      }
+      
+      const data = await response.json();
+      setStats(data);
+    } catch (err) {
+      setError('Không thể tải dữ liệu thống kê');
+      console.error('Error fetching admin stats:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
       </Box>
     );
   }
 
-  if (error) {
-    return (
-      <Container>
-        <Typography color="error" variant="h6" sx={{ mt: 4 }}>
-          {error}
-        </Typography>
-      </Container>
-    );
-  }
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Bảng điều khiển quản trị
-        </Typography>
-      </Box>
+      <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <AdminPanelSettings />
+        Tổng quan hệ thống
+      </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={3}>
-        {/* Thống kê người dùng */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardHeader 
-              title="Người dùng" 
-              avatar={<PeopleIcon color="primary" />}
-            />
             <CardContent>
-              <Typography variant="h3" align="center">
-                {stats?.userCount || 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                Tổng số người dùng đã đăng ký
-              </Typography>
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => router.push('/admin/users')}
-                >
-                  Quản lý người dùng
-                </Button>
+              <Box display="flex" alignItems="center" gap={2}>
+                <People color="primary" />
+                <Box>
+                  <Typography variant="h6">Người dùng</Typography>
+                  <Typography variant="h4">{stats?.totalUsers || 0}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tổng số tài khoản
+                  </Typography>
+                </Box>
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Thống kê bài test */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardHeader 
-              title="Bài test" 
-              avatar={<PsychologyIcon color="primary" />}
-            />
             <CardContent>
-              <Typography variant="h3" align="center">
-                {stats?.testCount || 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                Tổng số bài test đã hoàn thành
-              </Typography>
+              <Box display="flex" alignItems="center" gap={2}>
+                <Quiz color="secondary" />
+                <Box>
+                  <Typography variant="h6">Bài test hoàn thành</Typography>
+                  <Typography variant="h4">{stats?.totalTestsCompleted || 0}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tổng số lượt làm bài
+                  </Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Loại tính cách phổ biến */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardHeader 
-              title="Loại tính cách phổ biến" 
-              avatar={<ChartIcon color="primary" />}
-            />
             <CardContent>
-              <List>
-                {stats?.popularTypes.slice(0, 5).map((type) => (
-                  <ListItem key={type.type}>
-                    <ListItemText
-                      primary={type.type}
-                      secondary={`${type.count} người dùng`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
+              <Box display="flex" alignItems="center" gap={2}>
+                <Psychology color="success" />
+                <Box>
+                  <Typography variant="h6">Câu hỏi</Typography>
+                  <Typography variant="h4">{stats?.totalQuestions || 0}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Câu hỏi trong hệ thống
+                  </Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Quản lý loại tính cách */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" gap={2}>
+                <Work color="warning" />
+                <Box>
+                  <Typography variant="h6">Nghề nghiệp</Typography>
+                  <Typography variant="h4">{stats?.totalCareers || 0}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Gợi ý nghề nghiệp
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
         <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader 
-              title="Quản lý loại tính cách" 
-              avatar={<CategoryIcon color="primary" />}
-            />
-            <CardContent>
-              <Typography variant="body1" paragraph>
-                Quản lý thông tin chi tiết về các loại tính cách MBTI, bao gồm mô tả, điểm mạnh, điểm yếu và nghề nghiệp phù hợp.
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<CategoryIcon />}
-                onClick={() => router.push('/admin/personality-types')}
-                fullWidth
-              >
-                Chỉnh sửa danh sách loại tính cách
-              </Button>
-            </CardContent>
-          </Card>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Hoạt động gần đây
+            </Typography>
+            <Box display="flex" alignItems="center" gap={2} mb={2}>
+              <TrendingUp color="success" />
+              <Box>
+                <Typography variant="h4" color="success.main">
+                  +{stats?.growthPercentage || 0}%
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tăng trưởng tháng này
+                </Typography>
+              </Box>
+            </Box>
+            <Typography variant="body1">
+              {stats?.recentTestsCount || 0} bài test được hoàn thành trong 30 ngày qua
+            </Typography>
+          </Paper>
         </Grid>
 
-        {/* Quản lý nghề nghiệp */}
         <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader 
-              title="Quản lý nghề nghiệp" 
-              avatar={<WorkIcon color="primary" />}
-            />
-            <CardContent>
-              <Typography variant="body1" paragraph>
-                Quản lý thông tin về các nghề nghiệp phù hợp với từng loại tính cách, bao gồm mô tả, kỹ năng cần thiết và yêu cầu học vấn.
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<WorkIcon />}
-                onClick={() => router.push('/admin/careers')}
-                fullWidth
-              >
-                Chỉnh sửa danh sách nghề nghiệp
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Quản lý câu hỏi MBTI */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader 
-              title="Quản lý câu hỏi MBTI" 
-              avatar={<PsychologyIcon color="primary" />}
-            />
-            <CardContent>
-              <Typography variant="body1" paragraph>
-                Quản lý nội dung câu hỏi và đáp án cho bài test MBTI. Có thể thêm, sửa, xóa và ẩn/hiện từng câu hỏi.
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<PsychologyIcon />}
-                onClick={() => router.push('/admin/questions')}
-                fullWidth
-              >
-                Chỉnh sửa câu hỏi MBTI
-              </Button>
-            </CardContent>
-          </Card>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Chào mừng đến với bảng điều khiển quản trị
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Đây là trung tâm quản lý hệ thống MBTI Career Test. Sử dụng menu điều hướng bên trái để truy cập các chức năng quản trị khác nhau.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              • Quản lý người dùng và phân quyền<br/>
+              • Quản lý câu hỏi và bài test<br/>
+              • Quản lý thông tin nghề nghiệp<br/>
+              • Cập nhật thông tin loại tính cách
+            </Typography>
+          </Paper>
         </Grid>
       </Grid>
-
-      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-      </Box>
     </Container>
   );
 } 

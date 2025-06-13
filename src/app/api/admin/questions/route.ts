@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import dbConnect from '@/lib/mongodb';
@@ -24,7 +24,7 @@ export async function GET() {
   return NextResponse.json(questions);
 }
 
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   await dbConnect();
   const data = await req.json();
@@ -33,7 +33,7 @@ export async function POST(req) {
   return NextResponse.json(question);
 }
 
-export async function PUT(req) {
+export async function PUT(req: NextRequest) {
   if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   await dbConnect();
   const data = await req.json();
@@ -42,7 +42,7 @@ export async function PUT(req) {
   return NextResponse.json(question);
 }
 
-export async function DELETE(req) {
+export async function DELETE(req: NextRequest) {
   if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   await dbConnect();
   const { _id } = await req.json();

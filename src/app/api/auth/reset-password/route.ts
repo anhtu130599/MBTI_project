@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Giải mã token
-    let payload;
+        // Giải mã token
+    let payload: any;
     try {
       payload = jwt.verify(token, PASSWORD_RESET_SECRET);
     } catch (err) {
@@ -27,9 +27,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     await dbConnect();
-    
+
     // Tìm người dùng
     const user = await User.findOne({ _id: payload.id, email: payload.email });
     if (!user) {

@@ -24,8 +24,6 @@ import {
   CircularProgress,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 
 interface PersonalityType {
   _id: string;
@@ -83,18 +81,7 @@ export default function AdminPersonalityTypesPage() {
     }
   };
 
-  const handleAddClick = () => {
-    setSelectedType(null);
-    setFormData({
-      type: '',
-      title: '',
-      description: '',
-      strengths: '',
-      weaknesses: '',
-      careers: '',
-    });
-    setDialogOpen(true);
-  };
+
 
   const handleEditClick = (type: PersonalityType) => {
     setSelectedType(type);
@@ -109,23 +96,14 @@ export default function AdminPersonalityTypesPage() {
     setDialogOpen(true);
   };
 
-  const handleDeleteClick = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa loại tính cách này?')) return;
 
-    try {
-      const response = await fetch(`/api/admin/personality-types/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Failed to delete type');
-
-      setTypes(types.filter(type => type._id !== id));
-    } catch (err) {
-      setError('Lỗi khi xóa loại tính cách');
-    }
-  };
 
   const handleSubmit = async () => {
+    if (!selectedType) {
+      setError('Không có loại tính cách được chọn');
+      return;
+    }
+
     try {
       const data = {
         ...formData,
@@ -134,27 +112,18 @@ export default function AdminPersonalityTypesPage() {
         careers: formData.careers.split('\n').filter(s => s.trim()),
       };
 
-      const response = await fetch(
-        selectedType
-          ? `/api/admin/personality-types/${selectedType._id}`
-          : '/api/admin/personality-types',
-        {
-          method: selectedType ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch(`/api/admin/personality-types/${selectedType._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
       if (!response.ok) throw new Error('Failed to save type');
 
       const savedType = await response.json();
-      if (selectedType) {
-        setTypes(types.map(type => 
-          type._id === selectedType._id ? savedType : type
-        ));
-      } else {
-        setTypes([...types, savedType]);
-      }
+      setTypes(types.map(type => 
+        type._id === selectedType._id ? savedType : type
+      ));
       setDialogOpen(false);
     } catch (err) {
       setError('Lỗi khi lưu loại tính cách');
@@ -170,25 +139,14 @@ export default function AdminPersonalityTypesPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button
-        variant="outlined"
-        onClick={() => router.push('/admin')}
-        sx={{ mb: 2 }}
-      >
-        Quay lại trang quản trị
-      </Button>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+    <Container maxWidth="lg">
+      <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Quản lý loại tính cách
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddClick}
-        >
-          Thêm mới
-        </Button>
+        <Typography variant="body2" color="text.secondary">
+          MBTI có cố định 16 loại tính cách. Bạn chỉ có thể chỉnh sửa thông tin mô tả, không thể thêm mới hoặc xóa loại tính cách.
+        </Typography>
       </Box>
 
       {error && (
@@ -218,15 +176,9 @@ export default function AdminPersonalityTypesPage() {
                     onClick={() => handleEditClick(type)}
                     color="primary"
                     size="small"
+                    title="Chỉnh sửa thông tin"
                   >
                     <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => handleDeleteClick(type._id)}
-                    color="error"
-                    size="small"
-                  >
-                    <DeleteIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -237,15 +189,16 @@ export default function AdminPersonalityTypesPage() {
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
-          {selectedType ? 'Chỉnh sửa loại tính cách' : 'Thêm loại tính cách mới'}
+          Chỉnh sửa thông tin loại tính cách
         </DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
-            label="Loại"
+            label="Loại tính cách"
             fullWidth
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            disabled
+            helperText="Loại tính cách không thể thay đổi do nghiệp vụ MBTI"
           />
           <TextField
             margin="dense"

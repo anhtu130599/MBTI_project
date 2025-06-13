@@ -1,17 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-        ],
-      },
-    ]
+  experimental: {
+    optimizePackageImports: ['@mui/material', '@mui/icons-material'],
   },
-} 
+  // Remove overly permissive CORS headers
+  // Add them back in specific API routes if needed
+}
+
+module.exports = nextConfig; 

@@ -83,13 +83,13 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg">
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => router.push('/admin')}
+        onClick={() => router.push('/admin/users')}
         sx={{ mb: 2 }}
       >
-        Quay lại trang quản trị
+        Quay lại danh sách người dùng
       </Button>
 
       <Typography variant="h4" gutterBottom>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import jwt from 'jsonwebtoken';
-import { sendPasswordResetEmail } from '@/lib/nodemailer';
+import { sendPasswordResetEmail } from '@/core/infrastructure/external/nodemailer';
 
 const PASSWORD_RESET_SECRET = process.env.PASSWORD_RESET_SECRET || 'reset-secret';
 

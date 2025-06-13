@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Xác thực token
-    let decoded;
+        // Xác thực token
+    let decoded: any;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     } catch (error) {
@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     await dbConnect();
-    
+
     // Tìm người dùng theo email từ token
     const user = await User.findOne({ email: decoded.email });
     

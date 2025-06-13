@@ -111,14 +111,7 @@ export default function AdminQuestionsPage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Button
-        variant="outlined"
-        onClick={() => router.push('/admin')}
-        sx={{ mb: 2 }}
-      >
-        Quay lại trang quản trị
-      </Button>
+    <Container maxWidth="md">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Quản lý câu hỏi MBTI
@@ -178,14 +171,15 @@ export default function AdminQuestionsPage() {
                 />
                 <Autocomplete
                   options={VALUE_OPTIONS}
-                  getOptionLabel={o => o.label}
-                  value={VALUE_OPTIONS.find(o => o.value === opt.value) || null}
+                  getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+                  value={VALUE_OPTIONS.find(o => o.value === opt.value) || undefined}
                   onChange={(_, v) => handleOptionChange(i, 'value', v ? v.value : '')}
                   renderInput={params => <TextField {...params} label="Loại" />}
                   sx={{ minWidth: 180 }}
-                  isOptionEqualToValue={(o, v) => o.value === v.value}
-                  disableClearable
-                  freeSolo
+                  isOptionEqualToValue={(option, value) => 
+                    (typeof option === 'string' ? option : option.value) === 
+                    (typeof value === 'string' ? value : value.value)
+                  }
                 />
                 <IconButton onClick={() => handleRemoveOption(i)} disabled={form.options.length <= 2}><DeleteIcon /></IconButton>
               </Box>

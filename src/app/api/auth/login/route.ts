@@ -1,85 +1,89 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { SignJWT } from 'jose';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import { SignJWT } from 'jose';
+import bcrypt from 'bcryptjs';
 
-// Khóa bí mật cho JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
-    
-    // Kiểm tra dữ liệu đầu vào
+
     if (!username || !password) {
       return NextResponse.json(
-        { error: 'Vui lòng cung cấp tên đăng nhập và mật khẩu' },
+        { message: 'Username and password are required' },
         { status: 400 }
       );
     }
-    
-    // Kết nối database
+
     await dbConnect();
-    
-    // Tìm người dùng theo username
+    const User = (await import('@/models/User')).default;
     const user = await User.findOne({ username });
-    
-    // Kiểm tra xem người dùng có tồn tại không
+
     if (!user) {
       return NextResponse.json(
-        { error: 'Tên đăng nhập hoặc mật khẩu không đúng' },
+        { message: 'Invalid username or password' },
         { status: 401 }
       );
     }
-    
-    // Kiểm tra mật khẩu
-    const isPasswordValid = await user.comparePassword(password);
-    
-    if (!isPasswordValid) {
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Tên đăng nhập hoặc mật khẩu không đúng' },
+        { message: 'Invalid username or password' },
         { status: 401 }
       );
     }
+
+    // Update lastLogin safely
+    try {
+      await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+    } catch (updateError) {
+      console.warn('Could not update lastLogin:', updateError);
+      // Continue anyway, login should still work
+    }
+
+    // Create JWT token using jose (same as /api/auth/me)
+    const iat = Math.floor(Date.now() / 1000);
+    const exp = iat + 60 * 60 * 24 * 7; // 7 days
     
-    // Cập nhật thời gian đăng nhập cuối cùng
-    user.lastLogin = new Date();
-    await user.save();
-    
-    // Tạo JWT token
     const token = await new SignJWT({
-      id: user._id.toString(),
+      userId: user._id.toString(),
       username: user.username,
-      role: user.role
+      role: user.role,
     })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime('24h')
+      .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+      .setIssuedAt(iat)
+      .setExpirationTime(exp)
       .sign(new TextEncoder().encode(JWT_SECRET));
-    
-    // Trả về thông tin người dùng (không bao gồm mật khẩu)
-    const userResponse = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role
-    };
-    
-    // Lưu token vào cookie
-    const response = NextResponse.json(userResponse);
+
+    // Create response
+    const response = NextResponse.json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+    // Set HTTP-only cookie
     response.cookies.set('auth-token', token, {
       httpOnly: true,
-      secure: false, // Để false khi phát triển trên localhost
-      maxAge: 60 * 60 * 24,
-      path: '/',
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
     });
+
     return response;
-  } catch (error) {
-    console.error('Error logging in:', error);
+  } catch (error: any) {
+    console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Đăng nhập thất bại' },
+      { message: error.message || 'Internal server error' },
       { status: 500 }
     );
   }
