@@ -14,11 +14,25 @@ export interface QuestionStats {
 }
 
 export interface TestSubmissionResponse {
+  id?: string;
   type: string;
-  description: string;
-  strengths: string[];
-  weaknesses: string[];
-  careers: {
+  personalityType: string;
+  description?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  careerRecommendations: string[];
+  scores?: {
+    E: number;
+    I: number;
+    S: number;
+    N: number;
+    T: number;
+    F: number;
+    J: number;
+    P: number;
+  };
+  timestamp: Date | string;
+  careers?: {
     title: string;
     description: string;
     matchScore: number;
@@ -32,7 +46,17 @@ export const testService = {
     if (!response.ok) {
       throw new Error('Failed to fetch questions');
     }
-    return response.json();
+    const data = await response.json();
+    
+    // Map _id thành id để frontend sử dụng nhất quán
+    return data.map((question: any) => ({
+      ...question,
+      id: question._id || question.id, // Ưu tiên _id từ MongoDB, fallback về id
+      options: question.options?.map((option: any) => ({
+        ...option,
+        id: option._id || option.id
+      })) || []
+    }));
   },
 
   async getQuestionStats(): Promise<QuestionStats> {
