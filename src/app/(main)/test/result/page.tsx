@@ -18,7 +18,6 @@ import {
   Alert,
   Button,
   Stack,
-  Avatar,
   Paper,
 } from '@mui/material';
 import {

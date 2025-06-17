@@ -34,8 +34,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, onSuc
     try {
       await onSubmit(formData);
       onSuccess?.();
-    } catch (err: any) {
-      setError(err.message || 'Đăng nhập thất bại');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Đăng nhập thất bại');
+      } else {
+        setError('Đăng nhập thất bại');
+      }
     }
   };
 

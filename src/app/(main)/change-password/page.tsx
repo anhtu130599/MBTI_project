@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Container,
   Typography,
@@ -19,7 +18,6 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +39,7 @@ export default function ChangePasswordPage() {
       } else {
         setError(data.error || 'Đổi mật khẩu thất bại');
       }
-    } catch (err) {
+    } catch {
       setError('Có lỗi xảy ra, vui lòng thử lại');
     } finally {
       setLoading(false);

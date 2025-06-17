@@ -80,10 +80,11 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
     console.error('Login error:', error);
     return NextResponse.json(
-      { message: error.message || 'Internal server error' },
+      { message },
       { status: 500 }
     );
   }

@@ -18,15 +18,21 @@ async function getAuthenticatedUser(request: NextRequest) {
   }
 }
 
+interface TestHistoryItem {
+  _id: string;
+  personalityType: string;
+  createdAt: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getAuthenticatedUser(request);
+    await getAuthenticatedUser(request);
     
     await dbConnect();
     
     // For now, return empty array since we don't have test results collection yet
     // TODO: Replace with actual TestResult model when implemented
-    const testHistory: any[] = [];
+    const testHistory: TestHistoryItem[] = [];
     
     // Example of how it would work with actual TestResult model:
     // const TestResult = (await import('@/models/TestResult')).default;
@@ -35,7 +41,8 @@ export async function GET(request: NextRequest) {
     //   .lean();
 
     return NextResponse.json(testHistory);
-  } catch (error: any) {
+  } catch (e) {
+    const error = e as Error;
     console.error('Get test history error:', error);
     if (error.message === 'Unauthorized') {
       return NextResponse.json(

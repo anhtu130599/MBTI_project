@@ -1,13 +1,13 @@
 // Error monitoring and logging utilities
 
-interface LogLevel {
+interface _LogLevel {
   ERROR: 'error';
   WARN: 'warn';
   INFO: 'info';
   DEBUG: 'debug';
 }
 
-const LOG_LEVELS = {
+const _LOG_LEVELS = {
   ERROR: 'error' as const,
   WARN: 'warn' as const,
   INFO: 'info' as const,
@@ -34,7 +34,7 @@ interface LogEntry {
     stack?: string;
     code?: string | number;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface ErrorEvent {
@@ -44,7 +44,7 @@ interface ErrorEvent {
   sessionId?: string;
   requestId?: string;
   tags?: Record<string, string>;
-  extra?: Record<string, any>;
+  extra?: Record<string, unknown>;
 }
 
 interface PerformanceMetric {
@@ -78,7 +78,7 @@ class Logger {
     level: 'error' | 'warn' | 'info' | 'debug',
     message: string,
     context?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): LogEntry {
     return {
       level,
@@ -154,7 +154,7 @@ class Logger {
     level: 'error' | 'warn' | 'info' | 'debug',
     message: string,
     context?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     if (!this.shouldLog(level as 'error' | 'warn' | 'info' | 'debug')) return;
 
@@ -166,14 +166,14 @@ class Logger {
     message: string,
     error?: Error,
     context?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     const errorMetadata = error ? {
       error: {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        ...(error as any).code && { code: (error as any).code },
+        ...(error && typeof error === 'object' && 'code' in error && { code: (error as { code?: string | number }).code }),
       },
       ...metadata,
     } : metadata;
@@ -181,15 +181,15 @@ class Logger {
     await this.log('error', message, context, errorMetadata);
   }
 
-  async warn(message: string, context?: string, metadata?: Record<string, any>): Promise<void> {
+  async warn(message: string, context?: string, metadata?: Record<string, unknown>): Promise<void> {
     await this.log('warn', message, context, metadata);
   }
 
-  async info(message: string, context?: string, metadata?: Record<string, any>): Promise<void> {
+  async info(message: string, context?: string, metadata?: Record<string, unknown>): Promise<void> {
     await this.log('info', message, context, metadata);
   }
 
-  async debug(message: string, context?: string, metadata?: Record<string, any>): Promise<void> {
+  async debug(message: string, context?: string, metadata?: Record<string, unknown>): Promise<void> {
     await this.log('debug', message, context, metadata);
   }
 }
@@ -271,7 +271,7 @@ class ErrorMonitor {
     message: string,
     level: 'info' | 'warning' | 'error' = 'info',
     context?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     switch (level) {
       case 'error':
@@ -371,7 +371,7 @@ class PerformanceMonitor {
 }
 
 // Utility functions for API routes
-export function withRequestLogging<T extends any[], R>(
+export function withRequestLogging<T extends unknown[], R>(
   handler: (...args: T) => Promise<R>,
   routeName: string
 ) {
@@ -419,7 +419,7 @@ export function setupGlobalErrorHandlers(): void {
     await errorMonitor.captureError({
       error: reason instanceof Error ? reason : new Error(String(reason)),
       context: 'UnhandledPromiseRejection',
-      extra: { promise: promise.toString() },
+      extra: { promise: String(promise) },
     });
   });
 

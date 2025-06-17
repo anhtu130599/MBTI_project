@@ -1,7 +1,13 @@
 // Advanced caching strategies
 
-import { CacheKeys, CacheTTL, cacheHelper } from '@/lib/cache';
+import { CacheTTL, cacheHelper } from '@/lib/cache';
 import { logger, performanceMonitor } from '@/lib/monitoring';
+
+interface IRedisClient {
+  isReady: () => boolean;
+  set: (key: string, value: string, ttl: number) => Promise<void>;
+  ttl: (key: string) => Promise<number>;
+}
 
 interface CacheStrategy {
   name: string;
@@ -28,7 +34,7 @@ export class CacheAsideStrategy implements CacheStrategy {
       );
       
       return cached as T;
-    } catch (error) {
+    } catch {
       return null; // Cache miss
     } finally {
       endTimer();
@@ -43,8 +49,7 @@ export class CacheAsideStrategy implements CacheStrategy {
       const redis = await this.getRedisClient();
       
       // Store in memory cache
-      const memoryCache = cacheHelper['cache'];
-      memoryCache.set(key, value, ttl);
+      cacheHelper.set(key, value, ttl);
       
       // Store in Redis if available
       if (redis?.isReady()) {
@@ -67,10 +72,10 @@ export class CacheAsideStrategy implements CacheStrategy {
     await cacheHelper.invalidatePattern(pattern);
   }
 
-  private async getRedisClient() {
+  private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis;
+      return redis as IRedisClient;
     } catch {
       return null;
     }
@@ -80,9 +85,9 @@ export class CacheAsideStrategy implements CacheStrategy {
 // Write-Through Strategy
 export class WriteThroughStrategy implements CacheStrategy {
   name = 'write-through';
-  private dbWriter: (key: string, value: any) => Promise<void>;
+  private dbWriter: (key: string, value: unknown) => Promise<void>;
 
-  constructor(dbWriter: (key: string, value: any) => Promise<void>) {
+  constructor(dbWriter: (key: string, value: unknown) => Promise<void>) {
     this.dbWriter = dbWriter;
   }
 
@@ -150,8 +155,7 @@ export class WriteThroughStrategy implements CacheStrategy {
     const redis = await this.getRedisClient();
     
     // Store in memory cache
-    const memoryCache = cacheHelper['cache'];
-    memoryCache.set(key, value, ttl);
+    cacheHelper.set(key, value, ttl);
     
     // Store in Redis if available
     if (redis?.isReady()) {
@@ -159,10 +163,10 @@ export class WriteThroughStrategy implements CacheStrategy {
     }
   }
 
-  private async getRedisClient() {
+  private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis;
+      return redis as IRedisClient;
     } catch {
       return null;
     }
@@ -172,14 +176,14 @@ export class WriteThroughStrategy implements CacheStrategy {
 // Write-Behind (Write-Back) Strategy
 export class WriteBehindStrategy implements CacheStrategy {
   name = 'write-behind';
-  private dbWriter: (operations: Array<{ key: string; value: any; operation: 'set' | 'delete' }>) => Promise<void>;
-  private writeQueue: Array<{ key: string; value: any; operation: 'set' | 'delete'; timestamp: number }> = [];
+  private dbWriter: (operations: Array<{ key: string; value: unknown; operation: 'set' | 'delete' }>) => Promise<void>;
+  private writeQueue: Array<{ key: string; value: unknown; operation: 'set' | 'delete'; timestamp: number }> = [];
   private flushInterval: number;
   private maxQueueSize: number;
   private intervalId?: NodeJS.Timeout;
 
   constructor(
-    dbWriter: (operations: Array<{ key: string; value: any; operation: 'set' | 'delete' }>) => Promise<void>,
+    dbWriter: (operations: Array<{ key: string; value: unknown; operation: 'set' | 'delete' }>) => Promise<void>,
     options: {
       flushInterval?: number; // milliseconds
       maxQueueSize?: number;
@@ -272,7 +276,7 @@ export class WriteBehindStrategy implements CacheStrategy {
     }
   }
 
-  private queueWrite(key: string, value: any, operation: 'set' | 'delete'): void {
+  private queueWrite(key: string, value: unknown, operation: 'set' | 'delete'): void {
     // Remove existing operation for the same key
     this.writeQueue = this.writeQueue.filter(op => op.key !== key);
     
@@ -300,8 +304,7 @@ export class WriteBehindStrategy implements CacheStrategy {
     const redis = await this.getRedisClient();
     
     // Store in memory cache
-    const memoryCache = cacheHelper['cache'];
-    memoryCache.set(key, value, ttl);
+    cacheHelper.set(key, value, ttl);
     
     // Store in Redis if available
     if (redis?.isReady()) {
@@ -309,10 +312,10 @@ export class WriteBehindStrategy implements CacheStrategy {
     }
   }
 
-  private async getRedisClient() {
+  private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis;
+      return redis as IRedisClient;
     } catch {
       return null;
     }
@@ -322,11 +325,11 @@ export class WriteBehindStrategy implements CacheStrategy {
 // Refresh-Ahead Strategy
 export class RefreshAheadStrategy implements CacheStrategy {
   name = 'refresh-ahead';
-  private dataLoader: (key: string) => Promise<any>;
+  private dataLoader: (key: string) => Promise<unknown>;
   private refreshThreshold: number; // Percentage of TTL when to refresh
 
   constructor(
-    dataLoader: (key: string) => Promise<any>,
+    dataLoader: (key: string) => Promise<unknown>,
     refreshThreshold: number = 0.8 // Refresh when 80% of TTL has passed
   ) {
     this.dataLoader = dataLoader;
@@ -400,8 +403,7 @@ export class RefreshAheadStrategy implements CacheStrategy {
     const redis = await this.getRedisClient();
     
     // Store in memory cache
-    const memoryCache = cacheHelper['cache'];
-    memoryCache.set(key, value, ttl);
+    cacheHelper.set(key, value, ttl);
     
     // Store in Redis if available
     if (redis?.isReady()) {
@@ -409,10 +411,10 @@ export class RefreshAheadStrategy implements CacheStrategy {
     }
   }
 
-  private async getRedisClient() {
+  private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis;
+      return redis as IRedisClient;
     } catch {
       return null;
     }
@@ -425,19 +427,19 @@ export class CacheStrategyFactory {
     return new CacheAsideStrategy();
   }
 
-  static createWriteThrough(dbWriter: (key: string, value: any) => Promise<void>): WriteThroughStrategy {
+  static createWriteThrough(dbWriter: (key: string, value: unknown) => Promise<void>): WriteThroughStrategy {
     return new WriteThroughStrategy(dbWriter);
   }
 
   static createWriteBehind(
-    dbWriter: (operations: Array<{ key: string; value: any; operation: 'set' | 'delete' }>) => Promise<void>,
+    dbWriter: (operations: Array<{ key: string; value: unknown; operation: 'set' | 'delete' }>) => Promise<void>,
     options?: { flushInterval?: number; maxQueueSize?: number }
   ): WriteBehindStrategy {
     return new WriteBehindStrategy(dbWriter, options);
   }
 
   static createRefreshAhead(
-    dataLoader: (key: string) => Promise<any>,
+    dataLoader: (key: string) => Promise<unknown>,
     refreshThreshold?: number
   ): RefreshAheadStrategy {
     return new RefreshAheadStrategy(dataLoader, refreshThreshold);
@@ -449,7 +451,7 @@ export class CacheStrategyFactory {
 export const categoryCacheStrategy = CacheStrategyFactory.createCacheAside();
 
 export const userCacheStrategy = CacheStrategyFactory.createWriteThrough(
-  async (key: string, value: any) => {
+  async (key: string, value: unknown) => {
     const userId = key.replace('user:', '');
     // Update user in database
     const dbConnect = (await import('@/lib/mongodb')).default;

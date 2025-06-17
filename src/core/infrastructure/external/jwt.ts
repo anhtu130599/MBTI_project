@@ -48,7 +48,7 @@ export function isTokenExpired(token: string): boolean {
 export function refreshToken(token: string): string | null {
   try {
     const decoded = verifyToken(token);
-    const { iat, exp, ...payload } = decoded;
+    const { iat: _iat, exp: _exp, ...payload } = decoded;
     return generateToken(payload);
   } catch {
     return null;

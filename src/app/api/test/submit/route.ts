@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import TestResult from '@/models/TestResult';
-import Question from '@/models/Question';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+interface ApiOption {
+  id: string;
+  text: string;
+  score: number;
+  trait: string;
+}
+
+interface ApiQuestion {
+  id: string;
+  text: string;
+  options: ApiOption[];
+}
 
 // Hàm tính toán loại tính cách MBTI dựa trên câu trả lời
 async function calculateMBTI(answers: Record<string, string>): Promise<{
@@ -30,20 +42,20 @@ async function calculateMBTI(answers: Record<string, string>): Promise<{
   
   // Lấy câu hỏi từ API (sử dụng dữ liệu static thay vì database)
   const questionsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/test/questions`);
-  const questionsData = await questionsResponse.json();
+  const questionsData: { questions: ApiQuestion[] } = await questionsResponse.json();
   const questions = questionsData.questions;
   
   console.log('📝 Total questions loaded:', questions.length);
   
   // Phân tích câu trả lời
   for (const [questionId, optionId] of Object.entries(answers)) {
-    const question = questions.find((q: any) => q.id === questionId);
+    const question = questions.find((q) => q.id === questionId);
     if (!question) {
       console.log(`❌ Question not found: ${questionId}`);
       continue;
     }
     
-    const option = question.options.find((opt: any) => opt.id === optionId);
+    const option = question.options.find((opt) => opt.id === optionId);
     if (!option) {
       console.log(`❌ Option not found: ${optionId} for question ${questionId}`);
       continue;

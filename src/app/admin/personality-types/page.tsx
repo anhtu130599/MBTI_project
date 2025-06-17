@@ -66,7 +66,7 @@ export default function AdminPersonalityTypesPage() {
       fetchTypes();
     }
     checkAuth();
-  }, []);
+  }, [router]);
 
   const fetchTypes = async () => {
     try {
@@ -74,14 +74,12 @@ export default function AdminPersonalityTypesPage() {
       if (!response.ok) throw new Error('Failed to fetch types');
       const data = await response.json();
       setTypes(data);
-    } catch (err) {
+    } catch {
       setError('Lỗi khi tải danh sách loại tính cách');
     } finally {
       setLoading(false);
     }
   };
-
-
 
   const handleEditClick = (type: PersonalityType) => {
     setSelectedType(type);
@@ -95,8 +93,6 @@ export default function AdminPersonalityTypesPage() {
     });
     setDialogOpen(true);
   };
-
-
 
   const handleSubmit = async () => {
     if (!selectedType) {
@@ -125,7 +121,7 @@ export default function AdminPersonalityTypesPage() {
         type._id === selectedType._id ? savedType : type
       ));
       setDialogOpen(false);
-    } catch (err) {
+    } catch {
       setError('Lỗi khi lưu loại tính cách');
     }
   };

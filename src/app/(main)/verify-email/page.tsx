@@ -48,7 +48,7 @@ function VerifyEmailContent() {
           setStatus('error');
           setMessage(data.error || 'Xác thực email thất bại');
         }
-      } catch (error) {
+      } catch {
         setStatus('error');
         setMessage('Có lỗi xảy ra khi xác thực email');
       }

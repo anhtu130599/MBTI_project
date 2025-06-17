@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent } from 'react';
 import {
   Container, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, IconButton, Box, List, ListItem, ListItemText, ListItemSecondaryAction, Alert, Stack
@@ -8,7 +8,6 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Autocomplete from '@mui/material/Autocomplete';
-import { useRouter } from 'next/navigation';
 
 const VALUE_OPTIONS = [
   { label: 'E (Hướng ngoại)', value: 'E' },
@@ -21,26 +20,48 @@ const VALUE_OPTIONS = [
   { label: 'P (Linh hoạt)', value: 'P' },
 ];
 
+interface Option {
+  text: string;
+  value: string;
+}
+
+interface Question {
+  _id: string;
+  text: string;
+  options: Option[];
+  isActive: boolean;
+  category: string;
+}
+
+type QuestionForm = Omit<Question, '_id'>;
+
+const initialFormState: QuestionForm = {
+  text: '',
+  options: [{ text: '', value: '' }, { text: '', value: '' }],
+  isActive: true,
+  category: '',
+};
+
 export default function AdminQuestionsPage() {
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [open, setOpen] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
-  const [form, setForm] = useState<any>({ text: '', options: [{ text: '', value: '' }, { text: '', value: '' }], isActive: true, category: '' });
+  const [form, setForm] = useState<QuestionForm>(initialFormState);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/admin/questions', { credentials: 'include' })
       .then(res => res.json())
-      .then(setQuestions);
+      .then((data: Question[]) => setQuestions(data));
   }, []);
 
   const handleOpen = (idx: number | null = null) => {
     setEditIdx(idx);
     if (idx === null) {
-      setForm({ text: '', options: [{ text: '', value: '' }, { text: '', value: '' }], isActive: true, category: '' });
+      setForm(initialFormState);
     } else {
-      setForm(questions[idx]);
+      const { text, options, isActive, category } = questions[idx];
+      setForm({ text, options, isActive, category });
     }
     setOpen(true);
   };
@@ -50,12 +71,12 @@ export default function AdminQuestionsPage() {
     setError(null);
   };
 
-  const handleChange = (field: string, value: any) => {
-    setForm((f: any) => ({ ...f, [field]: value }));
+  const handleChange = (field: keyof QuestionForm, value: string | boolean) => {
+    setForm(f => ({ ...f, [field]: value }));
   };
 
-  const handleOptionChange = (idx: number, field: string, value: any) => {
-    setForm((f: any) => {
+  const handleOptionChange = (idx: number, field: keyof Option, value: string) => {
+    setForm(f => {
       const options = [...f.options];
       options[idx] = { ...options[idx], [field]: value };
       return { ...f, options };
@@ -63,39 +84,37 @@ export default function AdminQuestionsPage() {
   };
 
   const handleAddOption = () => {
-    setForm((f: any) => ({ ...f, options: [...f.options, { text: '', value: '' }] }));
+    setForm(f => ({ ...f, options: [...f.options, { text: '', value: '' }] }));
   };
 
   const handleRemoveOption = (idx: number) => {
-    setForm((f: any) => ({ ...f, options: f.options.filter((_: any, i: number) => i !== idx) }));
+    setForm(f => ({ ...f, options: f.options.filter((_, i: number) => i !== idx) }));
   };
 
   const handleSubmit = async () => {
-    if (!form.text || !form.category || form.options.some((o: any) => !o.text || !o.value)) {
+    if (!form.text || !form.category || form.options.some(o => !o.text || !o.value)) {
       setError('Vui lòng nhập đầy đủ nội dung, nhóm và đáp án!');
       return;
     }
     const method = editIdx === null ? 'POST' : 'PUT';
+    const body = editIdx === null ? form : { ...form, _id: questions[editIdx]._id };
+
     const res = await fetch('/api/admin/questions', {
       method,
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       setError('Có lỗi xảy ra!');
       return;
     }
-    const data = await res.json();
+    const data: Question = await res.json();
     if (editIdx === null) {
-      if (questions.length === 0) {
-        fetch('/api/admin/questions', { credentials: 'include' })
-          .then(res => res.json())
-          .then(setQuestions);
-      } else {
-        setQuestions((q) => [...q, data]);
-      }
-    } else setQuestions((q) => q.map((item, i) => (i === editIdx ? data : item)));
+        setQuestions(q => [...q, data]);
+    } else {
+        setQuestions(q => q.map(item => (item._id === data._id ? data : item)));
+    }
     setOpen(false);
   };
 
@@ -107,7 +126,7 @@ export default function AdminQuestionsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ _id: questions[idx]._id }),
     });
-    if (res.ok) setQuestions((q) => q.filter((_, i) => i !== idx));
+    if (res.ok) setQuestions(q => q.filter((_, i) => i !== idx));
   };
 
   return (
@@ -135,7 +154,7 @@ export default function AdminQuestionsPage() {
           <ListItem key={q._id} divider>
             <ListItemText
               primary={q.text}
-              secondary={q.options.map((o: any) => `${o.text} (${o.value})`).join(' | ')}
+              secondary={q.options.map(o => `${o.text} (${o.value})`).join(' | ')}
             />
             <ListItemSecondaryAction>
               <IconButton edge="end" onClick={() => handleOpen(idx)}><EditIcon /></IconButton>
@@ -151,35 +170,32 @@ export default function AdminQuestionsPage() {
             <TextField
               label="Nội dung câu hỏi"
               value={form.text}
-              onChange={e => handleChange('text', e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('text', e.target.value)}
               fullWidth
               multiline
             />
             <TextField
               label="Nhóm (category)"
               value={form.category}
-              onChange={e => handleChange('category', e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('category', e.target.value)}
               fullWidth
             />
-            {form.options.map((opt: any, i: number) => (
+            {form.options.map((opt, i) => (
               <Box key={i} display="flex" gap={1} alignItems="center">
                 <TextField
                   label={`Đáp án ${i + 1}`}
                   value={opt.text}
-                  onChange={e => handleOptionChange(i, 'text', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleOptionChange(i, 'text', e.target.value)}
                   fullWidth
                 />
                 <Autocomplete
                   options={VALUE_OPTIONS}
-                  getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
-                  value={VALUE_OPTIONS.find(o => o.value === opt.value) || undefined}
+                  getOptionLabel={(option) => option.label}
+                  value={VALUE_OPTIONS.find(o => o.value === opt.value) || null}
                   onChange={(_, v) => handleOptionChange(i, 'value', v ? v.value : '')}
                   renderInput={params => <TextField {...params} label="Loại" />}
                   sx={{ minWidth: 180 }}
-                  isOptionEqualToValue={(option, value) => 
-                    (typeof option === 'string' ? option : option.value) === 
-                    (typeof value === 'string' ? value : value.value)
-                  }
+                  isOptionEqualToValue={(option, value) => option.value === value.value}
                 />
                 <IconButton onClick={() => handleRemoveOption(i)} disabled={form.options.length <= 2}><DeleteIcon /></IconButton>
               </Box>

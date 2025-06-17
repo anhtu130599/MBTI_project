@@ -44,14 +44,14 @@ export enum ErrorCode {
 }
 
 // Success response interface
-interface SuccessResponse<T = any> {
+interface SuccessResponse<T = unknown> {
   success: true;
   data: T;
   message?: string;
   meta?: {
     timestamp: string;
     version: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -61,7 +61,7 @@ interface ErrorResponse {
   error: {
     code: ErrorCode | string;
     message: string;
-    details?: any;
+    details?: unknown;
     field?: string;
     timestamp: string;
     traceId?: string;
@@ -80,8 +80,17 @@ interface PaginationMeta {
 }
 
 // Paginated response interface
-interface PaginatedResponse<T = any> extends SuccessResponse<T[]> {
+interface PaginatedResponse<T = unknown> extends SuccessResponse<T[]> {
   pagination: PaginationMeta;
+}
+
+interface MongoError extends Error {
+  code?: number;
+  keyPattern?: Record<string, number>;
+  keyValue?: Record<string, string>;
+  errors?: Record<string, { message: string }>;
+  path?: string;
+  value?: string;
 }
 
 // API Response utility class
@@ -93,7 +102,7 @@ class ApiResponseUtil {
     data: T,
     message?: string,
     statusCode: number = 200,
-    meta?: Record<string, any>
+    meta?: Record<string, unknown>
   ): NextResponse<SuccessResponse<T>> {
     const response: SuccessResponse<T> = {
       success: true,
@@ -114,7 +123,7 @@ class ApiResponseUtil {
     data: T[],
     pagination: PaginationMeta,
     message?: string,
-    meta?: Record<string, any>
+    meta?: Record<string, unknown>
   ): NextResponse<PaginatedResponse<T>> {
     const response: PaginatedResponse<T> = {
       success: true,
@@ -136,7 +145,7 @@ class ApiResponseUtil {
     code: ErrorCode | string,
     message: string,
     statusCode: number = 500,
-    details?: any,
+    details?: unknown,
     field?: string,
     traceId?: string
   ): NextResponse<ErrorResponse> {
@@ -160,7 +169,7 @@ class ApiResponseUtil {
   static badRequest(
     message: string = 'Bad Request',
     code: ErrorCode = ErrorCode.VALIDATION_ERROR,
-    details?: any,
+    details?: unknown,
     field?: string
   ) {
     return this.error(code, message, 400, details, field);
@@ -190,14 +199,14 @@ class ApiResponseUtil {
   static conflict(
     message: string = 'Conflict',
     code: ErrorCode = ErrorCode.CONFLICT,
-    details?: any
+    details?: unknown
   ) {
     return this.error(code, message, 409, details);
   }
 
   static validation(
     message: string = 'Validation Error',
-    details?: any,
+    details?: unknown,
     field?: string
   ) {
     return this.error(ErrorCode.VALIDATION_ERROR, message, 422, details, field);
@@ -219,7 +228,7 @@ class ApiResponseUtil {
   static internalServerError(
     message: string = 'Internal Server Error',
     code: ErrorCode = ErrorCode.INTERNAL_SERVER_ERROR,
-    details?: any,
+    details?: unknown,
     traceId?: string
   ) {
     return this.error(code, message, 500, details, undefined, traceId);
@@ -274,7 +283,7 @@ class ApiResponseUtil {
   }
 
   // Helper for handling database errors
-  static handleDatabaseError(error: any, context?: string): NextResponse<ErrorResponse> {
+  static handleDatabaseError(error: MongoError, context?: string): NextResponse<ErrorResponse> {
     // Use monitoring system instead of console.error
     import('@/lib/monitoring').then(({ logger }) => {
       logger.error(`Database error ${context ? `in ${context}` : ''}`, error, 'Database');
@@ -291,14 +300,14 @@ class ApiResponseUtil {
       );
     }
 
-    if (error.name === 'ValidationError') {
+    if (error.name === 'ValidationError' && error.errors) {
       // Mongoose validation error
       const field = Object.keys(error.errors)[0];
       const message = error.errors[field]?.message || 'Validation failed';
       return this.validation(message, error.errors, field);
     }
 
-    if (error.name === 'CastError') {
+    if (error.name === 'CastError' && error.path && error.value) {
       // Invalid ObjectId or type casting error
       return this.badRequest(
         'Invalid ID format',
@@ -322,30 +331,32 @@ class ApiResponseUtil {
   ): Promise<T | NextResponse<ErrorResponse>> {
     try {
       return await operation();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use monitoring system instead of console.error
       import('@/lib/monitoring').then(({ errorMonitor }) => {
         errorMonitor.captureError({
-          error,
+          error: error as Error,
           context,
         });
       });
       
+      const mongoError = error as MongoError;
       // Handle known error types
-      if (error.name === 'MongoError' || error.name === 'ValidationError') {
-        return this.handleDatabaseError(error, context);
+      if (mongoError.name === 'MongoError' || mongoError.name === 'ValidationError') {
+        return this.handleDatabaseError(mongoError, context);
       }
       
+      const httpError = error as { statusCode?: number; code?: ErrorCode; message: string; };
       // Handle custom app errors
-      if (error.statusCode && error.code) {
-        return this.error(error.code, error.message, error.statusCode);
+      if (httpError.statusCode && httpError.code) {
+        return this.error(httpError.code, httpError.message, httpError.statusCode);
       }
       
       // Generic error
       return this.internalServerError(
         'An unexpected error occurred',
         ErrorCode.INTERNAL_SERVER_ERROR,
-        process.env.NODE_ENV === 'development' ? error.message : undefined
+        process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       );
     }
   }

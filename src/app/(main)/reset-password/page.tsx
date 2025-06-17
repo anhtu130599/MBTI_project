@@ -61,7 +61,7 @@ function ResetPasswordContent() {
       } else {
         setError(data.error || 'Đặt lại mật khẩu thất bại');
       }
-    } catch (error) {
+    } catch {
       setError('Có lỗi xảy ra khi đặt lại mật khẩu');
     }
   };

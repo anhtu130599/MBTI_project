@@ -38,7 +38,7 @@ const CareersPage = () => {
         if (!res.ok) throw new Error('Không thể tải danh sách nghề nghiệp');
         const data = await res.json();
         setCareers(data);
-      } catch (err) {
+      } catch {
         setError('Lỗi khi tải danh sách nghề nghiệp');
       } finally {
         setLoading(false);

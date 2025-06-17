@@ -29,11 +29,14 @@ export class LoginUseCase {
     // Generate token
     const token = this.tokenService.generateToken(user.id);
 
-    // Remove password from response
-    const { password, ...userWithoutPassword } = user;
+    // Create user response object without password
+    const { ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    delete userWithoutPassword.password;
 
     return {
-      user: userWithoutPassword as any,
+      user: userWithoutPassword,
       token
     };
   }

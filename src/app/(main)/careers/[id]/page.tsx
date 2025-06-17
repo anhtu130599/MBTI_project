@@ -36,21 +36,24 @@ export default function CareerDetailPage({ params }: { params: { id: string } })
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const fetchCareer = async () => {
+      try {
+        const res = await fetch(`/api/careers/${params.id}`);
+        if (!res.ok) throw new Error('Failed to fetch career details');
+        const data = await res.json();
+        setCareer(data);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchCareer();
   }, [params.id]);
-
-  const fetchCareer = async () => {
-    try {
-      const res = await fetch(`/api/careers/${params.id}`);
-      if (!res.ok) throw new Error('Failed to fetch career details');
-      const data = await res.json();
-      setCareer(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

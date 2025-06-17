@@ -39,6 +39,10 @@ export interface TestSubmissionResponse {
   }[];
 }
 
+interface ApiQuestion extends Omit<Question, 'id'> {
+  _id: string;
+}
+
 // Test service implementation
 export const testService = {
   async getQuestions(): Promise<Question[]> {
@@ -49,10 +53,10 @@ export const testService = {
     const data = await response.json();
     
     // Map _id thành id để frontend sử dụng nhất quán
-    return data.map((question: any) => ({
+    return data.map((question: ApiQuestion) => ({
       ...question,
       id: question._id || question.id, // Ưu tiên _id từ MongoDB, fallback về id
-      options: question.options?.map((option: any) => ({
+      options: question.options?.map((option: ApiQuestion['options'][number] & { _id: string }) => ({
         ...option,
         id: option._id || option.id
       })) || []

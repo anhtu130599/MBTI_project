@@ -407,7 +407,7 @@ export default function TestQuestionsPage() {
               {answeredCount === questions.length && (
                 <Alert severity="success" sx={{ mt: 2 }}>
                   <Typography variant="body2">
-                    🎉 Hoàn thành! Bạn có thể bấm "Hoàn thành bài test" để xem kết quả.
+                    🎉 Hoàn thành! Bạn có thể bấm &quot;Hoàn thành bài test&quot; để xem kết quả.
                   </Typography>
                 </Alert>
               )}

@@ -13,7 +13,7 @@ import {
   Paper,
   Chip,
 } from '@mui/material';
-import { CheckCircle, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
+import { CheckCircle } from '@mui/icons-material';
 import { Question } from '@/core/domain/entities/Question';
 
 interface TestQuestionProps {

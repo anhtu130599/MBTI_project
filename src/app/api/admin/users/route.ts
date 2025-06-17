@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { cookies } from 'next/headers';
@@ -6,7 +6,7 @@ import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get('auth-token')?.value;
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     let payload;
     try {
       payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    } catch (err) {
+    } catch {
       return NextResponse.json(
         { error: 'Token không hợp lệ hoặc đã hết hạn' },
         { status: 403 }
