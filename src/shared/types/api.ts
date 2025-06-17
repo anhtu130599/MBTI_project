@@ -1,8 +1,9 @@
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
   error?: string;
+  status?: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -19,10 +20,10 @@ export interface ApiError {
   status?: number;
 }
 
-export interface ListResponse<T> extends ApiResponse<PaginatedResponse<T>> {}
+export type ListResponse<T> = ApiResponse<PaginatedResponse<T>>;
 
-export interface CreateResponse<T> extends ApiResponse<T> {}
+export type CreateResponse<T> = ApiResponse<T>;
 
-export interface UpdateResponse<T> extends ApiResponse<T> {}
+export type UpdateResponse<T> = ApiResponse<T>;
 
-export interface DeleteResponse extends ApiResponse<{ id: string }> {} 
+export type DeleteResponse = ApiResponse<{ id: string }>; 

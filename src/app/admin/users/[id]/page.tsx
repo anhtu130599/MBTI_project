@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Container,
   Typography,
   Box,
-  Paper,
   Grid,
   Button,
   CircularProgress,
@@ -32,7 +31,19 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [admin, setAdmin] = useState<User | null>(null);
+
+  const fetchUserDetails = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/admin/users/${params.id}`);
+      if (!response.ok) throw new Error('Failed to fetch user details');
+      const data = await response.json();
+      setUser(data);
+    } catch {
+      setError('Lỗi khi tải thông tin người dùng');
+    } finally {
+      setLoading(false);
+    }
+  }, [params.id]);
 
   useEffect(() => {
     async function checkAuth() {
@@ -46,25 +57,10 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
         router.push('/');
         return;
       }
-      setAdmin(data.user);
       fetchUserDetails();
     }
     checkAuth();
-    // eslint-disable-next-line
-  }, []);
-
-  const fetchUserDetails = async () => {
-    try {
-      const response = await fetch(`/api/admin/users/${params.id}`);
-      if (!response.ok) throw new Error('Failed to fetch user details');
-      const data = await response.json();
-      setUser(data);
-    } catch (err) {
-      setError('Lỗi khi tải thông tin người dùng');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [router, fetchUserDetails]);
 
   if (loading) {
     return (

@@ -3,22 +3,14 @@ import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Box,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
   CircularProgress,
   Alert,
   Grid,
   Card,
   CardContent,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useRouter } from 'next/navigation';
 
 interface PersonalityType {
@@ -44,8 +36,12 @@ const PersonalityTypesPage = () => {
         if (!res.ok) throw new Error("Không thể tải dữ liệu loại tính cách");
         const data = await res.json();
         setTypes(data);
-      } catch (err: any) {
-        setError(err.message || "Lỗi không xác định");
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message || "Lỗi không xác định");
+        } else {
+          setError("Lỗi không xác định");
+        }
       } finally {
         setLoading(false);
       }

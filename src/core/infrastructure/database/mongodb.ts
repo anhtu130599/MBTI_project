@@ -1,8 +1,13 @@
-import mongoose from 'mongoose';
+import mongoose, { type Mongoose } from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mbti_db';
 
-let cached = global as any;
+const cached = global as typeof globalThis & {
+  mongoose: {
+    conn: Mongoose | null;
+    promise: Promise<Mongoose> | null;
+  };
+};
 
 if (!cached.mongoose) {
   cached.mongoose = { conn: null, promise: null };

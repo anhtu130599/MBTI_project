@@ -6,7 +6,7 @@ import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-async function checkAdmin(request: NextRequest) {
+async function checkAdmin() {
   const cookieStore = cookies();
   const token = cookieStore.get('auth-token')?.value;
   if (!token) return false;
@@ -19,11 +19,11 @@ async function checkAdmin(request: NextRequest) {
 }
 
 export async function GET(
-  request: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = await checkAdmin(request);
+    const isAdmin = await checkAdmin();
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Không có quyền truy cập' },
@@ -49,11 +49,11 @@ export async function GET(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = await checkAdmin(request);
+    const isAdmin = await checkAdmin();
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Không có quyền truy cập' },
@@ -90,7 +90,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = await checkAdmin(request);
+    const isAdmin = await checkAdmin();
     if (!isAdmin) {
       return NextResponse.json(
         { error: 'Không có quyền truy cập' },

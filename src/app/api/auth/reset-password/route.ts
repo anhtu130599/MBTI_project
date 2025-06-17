@@ -6,6 +6,11 @@ import bcrypt from 'bcryptjs';
 
 const PASSWORD_RESET_SECRET = process.env.PASSWORD_RESET_SECRET || 'reset-secret';
 
+interface ResetPayload extends jwt.JwtPayload {
+    id: string;
+    email: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { token, password } = await request.json();
@@ -18,10 +23,10 @@ export async function POST(request: NextRequest) {
     }
     
         // Giải mã token
-    let payload: any;
+    let payload: ResetPayload;
     try {
-      payload = jwt.verify(token, PASSWORD_RESET_SECRET);
-    } catch (err) {
+      payload = jwt.verify(token, PASSWORD_RESET_SECRET) as ResetPayload;
+    } catch {
       return NextResponse.json(
         { error: 'Token không hợp lệ hoặc đã hết hạn' },
         { status: 400 }

@@ -3,6 +3,10 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import jwt from 'jsonwebtoken';
 
+interface VerifyPayload extends jwt.JwtPayload {
+  email: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { token } = await request.json();
@@ -15,10 +19,10 @@ export async function POST(request: NextRequest) {
     }
     
         // Xác thực token
-    let decoded: any;
+    let decoded: VerifyPayload;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    } catch (error) {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as VerifyPayload;
+    } catch {
       return NextResponse.json(
         { error: 'Token xác thực đã hết hạn hoặc không hợp lệ' },
         { status: 400 }
@@ -69,7 +73,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Xác thực email thành công!'
     });
-  } catch (error) {
+  } catch (e) {
+    const error = e as Error;
     console.error('Error verifying email:', error);
     return NextResponse.json(
       { error: 'Xác thực email thất bại' },

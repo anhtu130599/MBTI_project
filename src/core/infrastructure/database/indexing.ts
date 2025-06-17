@@ -2,6 +2,7 @@
 
 import { logger } from '@/lib/monitoring';
 import dbConnect from '@/lib/mongodb';
+import { Db, Document } from 'mongodb';
 
 interface IndexDefinition {
   collectionName: string;
@@ -11,12 +12,20 @@ interface IndexDefinition {
     unique?: boolean;
     sparse?: boolean;
     background?: boolean;
-    partialFilterExpression?: Record<string, any>;
+    partialFilterExpression?: Document;
     expireAfterSeconds?: number;
-    collation?: Record<string, any>;
+    collation?: Document;
     weights?: Record<string, number>;
     default_language?: string;
     language_override?: string;
+  };
+}
+
+interface IndexStat extends Document {
+  name: string;
+  accesses: {
+    ops: number;
+    since: Date;
   };
 }
 
@@ -251,13 +260,13 @@ class DatabaseIndexManager {
     }
   }
 
-  private async createIndex(db: any, indexDef: IndexDefinition): Promise<void> {
+  private async createIndex(db: Db, indexDef: IndexDefinition): Promise<void> {
     try {
       const collection = db.collection(indexDef.collectionName);
       
       // Check if index already exists
       const existingIndexes = await collection.listIndexes().toArray();
-      const indexExists = existingIndexes.some((idx: any) => idx.name === indexDef.indexName);
+      const indexExists = existingIndexes.some((idx: Document) => idx.name === indexDef.indexName);
       
       if (indexExists) {
         await logger.debug(
@@ -311,7 +320,7 @@ class DatabaseIndexManager {
     }
   }
 
-  private async analyzeCollectionIndexes(db: any, collectionName: string): Promise<void> {
+  private async analyzeCollectionIndexes(db: Db, collectionName: string): Promise<void> {
     try {
       const collection = db.collection(collectionName);
       
@@ -327,14 +336,14 @@ class DatabaseIndexManager {
       );
 
       // Find unused indexes (excluding _id_ index)
-      const unusedIndexes = indexStats.filter((stat: any) => 
+      const unusedIndexes = indexStats.filter((stat: IndexStat) => 
         stat.accesses.ops === 0 && stat.name !== '_id_'
       );
       if (unusedIndexes.length > 0) {
         await logger.warn(
           `Found ${unusedIndexes.length} unused indexes in ${collectionName}`,
           'DatabaseIndexManager',
-          { unusedIndexes: unusedIndexes.map((idx: any) => idx.name) }
+          { unusedIndexes: unusedIndexes.map((idx: IndexStat) => idx.name) }
         );
       }
 
@@ -377,7 +386,7 @@ class DatabaseIndexManager {
             `Found ${profilingData.length} slow queries in the last 24 hours`,
             'DatabaseIndexManager',
             { 
-              slowQueries: profilingData.map(prof => ({
+              slowQueries: profilingData.map((prof: Document) => ({
                 command: prof.command,
                 duration: prof.millis,
                 collection: prof.ns,
@@ -419,7 +428,7 @@ class DatabaseIndexManager {
     }
   }
 
-  private async dropCollectionUnusedIndexes(db: any, collectionName: string): Promise<void> {
+  private async dropCollectionUnusedIndexes(db: Db, collectionName: string): Promise<void> {
     try {
       const collection = db.collection(collectionName);
       
@@ -429,7 +438,7 @@ class DatabaseIndexManager {
       ]).toArray();
 
       // Find unused indexes (excluding _id_ index)
-      const unusedIndexes = indexStats.filter((stat: any) => 
+      const unusedIndexes = indexStats.filter((stat: IndexStat) => 
         stat.accesses.ops === 0 && stat.name !== '_id_'
       );
 
@@ -480,9 +489,7 @@ class DatabaseIndexManager {
       }
 
       const collections = ['users', 'careers', 'personalitytypes', 'testresults'];
-      const result = {
-        collections: [] as any[]
-      };
+      const resultCollections = [];
 
       for (const collectionName of collections) {
         try {
@@ -496,11 +503,11 @@ class DatabaseIndexManager {
             { $indexStats: {} }
           ]).toArray();
 
-          result.collections.push({
+          resultCollections.push({
             name: collectionName,
             indexCount: stats.nindexes || 0,
             totalSize: stats.totalIndexSize || 0,
-            usage: indexStats.map(idx => ({
+            usage: indexStats.map((idx: IndexStat) => ({
               name: idx.name,
               uses: idx.accesses.ops,
               since: idx.accesses.since
@@ -516,7 +523,7 @@ class DatabaseIndexManager {
         }
       }
 
-      return result;
+      return { collections: resultCollections };
 
     } catch (error) {
       await logger.error('Failed to get index health', error as Error, 'DatabaseIndexManager');

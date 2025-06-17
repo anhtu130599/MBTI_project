@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
       createdAt: user.createdAt,
       lastLogin: user.lastLogin,
     });
-  } catch (error: any) {
+  } catch (e) {
+    const error = e as Error;
     console.error('Get profile error:', error);
     if (error.message === 'Unauthorized') {
       return NextResponse.json(
@@ -60,6 +61,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+interface UpdateData {
+  username?: string;
+  avatar?: string;
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUser(request);
@@ -71,7 +77,7 @@ export async function PUT(request: NextRequest) {
     await dbConnect();
     const User = (await import('@/models/User')).default;
     
-    const updateData: any = {};
+    const updateData: UpdateData = {};
     if (name) updateData.username = name; // Update username instead of name
 
     if (avatarFile) {
@@ -116,7 +122,8 @@ export async function PUT(request: NextRequest) {
         avatar: user.avatar,
       },
     });
-  } catch (error: any) {
+  } catch (e) {
+    const error = e as Error;
     console.error('Update profile error:', error);
     if (error.message === 'Unauthorized') {
       return NextResponse.json(

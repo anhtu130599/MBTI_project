@@ -76,9 +76,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     return NextResponse.json(userGrowth);
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { message: error.message || 'Internal server error' },
+      { message },
       { status: 500 }
     );
   }

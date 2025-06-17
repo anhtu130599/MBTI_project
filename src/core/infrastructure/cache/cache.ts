@@ -1,5 +1,13 @@
 // Caching utilities for performance optimization
 
+interface IRedisClient {
+    isReady: () => boolean;
+    get: (key: string) => Promise<string | null>;
+    set: (key: string, value: string, ttl: number) => Promise<void>;
+    del: (key: string) => Promise<void>;
+    deletePattern: (pattern: string) => Promise<void>;
+}
+
 interface CacheOptions {
   ttl?: number; // Time to live in milliseconds
   maxSize?: number; // Maximum number of entries
@@ -15,7 +23,7 @@ interface CacheEntry<T> {
 
 class MemoryCache {
   private static instance: MemoryCache;
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private defaultTTL: number;
   private maxSize: number;
   private cleanupInterval: NodeJS.Timeout;
@@ -102,6 +110,10 @@ class MemoryCache {
     return true;
   }
 
+  keys(): IterableIterator<string> {
+    return this.cache.keys();
+  }
+
   delete(key: string): boolean {
     return this.cache.delete(key);
   }
@@ -145,7 +157,7 @@ class MemoryCache {
 // Cache key generators
 export const CacheKeys = {
   // Careers
-  careers: (filters: Record<string, any> = {}) => {
+  careers: (filters: Record<string, string | number | boolean> = {}) => {
     const sortedKeys = Object.keys(filters).sort();
     const filterString = sortedKeys
       .map(key => `${key}:${filters[key]}`)
@@ -194,13 +206,13 @@ export class CacheHelper {
                    (!!process.env.REDIS_URL || !!process.env.REDIS_HOST);
   }
 
-  private async getRedisClient(): Promise<any> {
+  private async getRedisClient(): Promise<IRedisClient | null> {
     if (!this.useRedis) return null;
     
     try {
       const { redis } = await import('@/core/infrastructure/cache/redis');
-      return redis;
-    } catch (error) {
+      return redis as IRedisClient;
+    } catch {
       return null;
     }
   }
@@ -228,7 +240,7 @@ export class CacheHelper {
           this.cache.set(key, data, ttl);
           return data;
         }
-      } catch (error) {
+      } catch {
         // Redis error, continue to fetcher
       }
     }
@@ -242,7 +254,7 @@ export class CacheHelper {
     if (redis && redis.isReady()) {
       try {
         await redis.set(key, JSON.stringify(data), Math.floor(ttl / 1000));
-      } catch (error) {
+      } catch {
         // Redis error, continue (memory cache still works)
       }
     }
@@ -258,7 +270,7 @@ export class CacheHelper {
     if (redis && redis.isReady()) {
       try {
         await redis.del(key);
-      } catch (error) {
+      } catch {
         // Redis error, but memory cache was cleared
       }
     }
@@ -271,7 +283,7 @@ export class CacheHelper {
     const regex = new RegExp(pattern.replace(/\*/g, '.*'));
     const keysToDelete: string[] = [];
     
-    for (const [key] of this.cache['cache'].entries()) {
+    for (const key of this.cache.keys()) {
       if (regex.test(key)) {
         keysToDelete.push(key);
       }
@@ -284,7 +296,7 @@ export class CacheHelper {
     if (redis && redis.isReady()) {
       try {
         await redis.deletePattern(pattern);
-      } catch (error) {
+      } catch {
         // Redis error, but memory cache was cleared
       }
     }
@@ -341,7 +353,7 @@ export class CacheHelper {
 }
 
 // Request-level caching for API responses
-export function withResponseCache<T extends any[], R>(
+export function withResponseCache<T extends unknown[], R>(
   handler: (...args: T) => Promise<R>,
   cacheKeyFn: (...args: T) => string,
   ttl: number = CacheTTL.MEDIUM
@@ -417,7 +429,7 @@ export class BackgroundRefresher {
   }
 
   stopAll(): void {
-    for (const [key, intervalId] of this.intervals.entries()) {
+    for (const [, intervalId] of this.intervals.entries()) {
       clearInterval(intervalId);
     }
     this.intervals.clear();
@@ -426,11 +438,11 @@ export class BackgroundRefresher {
 
 // Smart caching decorator for class methods
 export function Cached(ttl: number = CacheTTL.MEDIUM) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     const cacheHelper = new CacheHelper();
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const cacheKey = `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`;
       
       return cacheHelper.cached(

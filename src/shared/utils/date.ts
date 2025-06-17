@@ -40,6 +40,6 @@ export function formatRelativeTime(date: string | Date): string {
   }
 }
 
-export function isValidDate(date: any): boolean {
+export function isValidDate(date: unknown): boolean {
   return date instanceof Date && !isNaN(date.getTime());
 } 

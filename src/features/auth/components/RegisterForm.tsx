@@ -95,8 +95,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         lastName: formData.lastName,
       });
       onSuccess?.();
-    } catch (error: any) {
-      setSubmitError(error.message || 'Đăng ký thất bại');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setSubmitError(error.message || 'Đăng ký thất bại');
+      } else {
+        setSubmitError('Đã xảy ra lỗi không mong muốn.');
+      }
     }
   };
 

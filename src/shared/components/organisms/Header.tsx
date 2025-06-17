@@ -13,11 +13,19 @@ import { useRouter } from 'next/navigation';
 import { AuthModals } from '@/features/auth/components/AuthModals';
 import { UserMenu } from '@/features/user/components/UserMenu';
 
+interface User {
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  role: string;
+}
+
 export const Header: React.FC = () => {
   const router = useRouter();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {

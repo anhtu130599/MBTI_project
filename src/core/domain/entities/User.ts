@@ -38,7 +38,9 @@ export interface LoginDto {
   password: string;
 }
 
+export type UserResponse = Omit<User, 'password'>;
+
 export interface AuthResponse {
-  user: User;
+  user: UserResponse;
   token: string;
 } 

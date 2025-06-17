@@ -43,8 +43,12 @@ export function useAuth() {
       // You might want to store this in localStorage, context, etc.
       
       return data;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred.');
+      }
       throw err;
     } finally {
       setIsLoading(false);
@@ -58,8 +62,12 @@ export function useAuth() {
     try {
       const result = await authService.register(userData);
       return result;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred.');
+      }
       throw err;
     } finally {
       setIsLoading(false);

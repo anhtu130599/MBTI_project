@@ -52,7 +52,6 @@ export default function AdminUsersPage() {
     role: "",
     emailVerified: false,
   });
-  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
@@ -66,12 +65,10 @@ export default function AdminUsersPage() {
         router.push("/");
         return;
       }
-      setUser(data.user);
       fetchUsers();
     }
     checkAuth();
-    // eslint-disable-next-line
-  }, []);
+  }, [router]);
 
   const fetchUsers = async () => {
     try {
@@ -79,7 +76,7 @@ export default function AdminUsersPage() {
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
       setUsers(data);
-    } catch (err) {
+    } catch {
       setError("Lỗi khi tải danh sách người dùng");
     } finally {
       setLoading(false);
@@ -119,7 +116,7 @@ export default function AdminUsersPage() {
         user._id === selectedUser._id ? { ...user, ...updatedUser.user } : user
       ));
       setEditDialogOpen(false);
-    } catch (err) {
+    } catch {
       setError("Lỗi khi cập nhật người dùng");
     }
   };
@@ -136,7 +133,7 @@ export default function AdminUsersPage() {
 
       setUsers(users.filter(user => user._id !== selectedUser._id));
       setDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       setError("Lỗi khi xóa người dùng");
     }
   };

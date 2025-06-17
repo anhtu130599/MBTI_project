@@ -98,22 +98,20 @@ export const careerSchemas = {
 
 // Validation middleware function
 export function validateRequest<T>(schema: ZodSchema<T>) {
-  return async (request: NextRequest): Promise<{ success: true; data: T } | { success: false; response: any }> => {
+  return async (request: NextRequest): Promise<{ success: true; data: T } | { success: false; response: Response }> => {
     try {
-      let data: any;
+      let data: unknown;
       
       // Get data based on request method
       if (request.method === 'GET' || request.method === 'DELETE') {
         // Parse query parameters
         const url = new URL(request.url);
-        const queryParams: any = {};
+        const queryParams: Record<string, string | string[]> = {};
         
         url.searchParams.forEach((value, key) => {
           // Handle array parameters (comma-separated)
-          if (key === 'tags' && value) {
-            queryParams[key] = value.split(',').map(tag => tag.trim()).filter(Boolean);
-          } else if (key === 'personalityTypes' && value) {
-            queryParams[key] = value.split(',').map(type => type.trim()).filter(Boolean);
+          if ((key === 'tags' || key === 'personalityTypes') && value) {
+            queryParams[key] = value.split(',').map(item => item.trim()).filter(Boolean);
           } else {
             queryParams[key] = value;
           }
@@ -124,7 +122,7 @@ export function validateRequest<T>(schema: ZodSchema<T>) {
         // Parse request body
         try {
           data = await request.json();
-        } catch (error) {
+        } catch (_error) {
           return {
             success: false,
             response: ApiResponseUtil.badRequest(
@@ -230,8 +228,8 @@ export async function requireAuth(request: NextRequest, requiredRole?: string) {
       };
     }
     
-    return { success: true, user: decoded };
-  } catch (error) {
+    return { success: true, user: decoded as { id: string; role: string; iat: number; exp: number } };
+  } catch (_error) {
     return {
       success: false,
       response: ApiResponseUtil.unauthorized('Token verification failed'),

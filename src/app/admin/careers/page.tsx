@@ -70,12 +70,12 @@ export default function AdminCareersPage() {
       fetchCareers();
     }
     checkAuth();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     fetch('/api/personality-types')
       .then(res => res.json())
-      .then(data => setMbtiTypes(data.map((t: any) => t.type)));
+      .then(data => setMbtiTypes(data.map((t: { type: string }) => t.type)));
   }, []);
 
   const fetchCareers = async () => {
@@ -84,7 +84,7 @@ export default function AdminCareersPage() {
       if (!response.ok) throw new Error('Failed to fetch careers');
       const data = await response.json();
       setCareers(data);
-    } catch (err) {
+    } catch {
       setError('Lỗi khi tải danh sách nghề nghiệp');
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ export default function AdminCareersPage() {
       if (!response.ok) throw new Error('Failed to delete career');
 
       setCareers(careers.filter(career => career._id !== id));
-    } catch (err) {
+    } catch {
       setError('Lỗi khi xóa nghề nghiệp');
     }
   };
@@ -165,7 +165,7 @@ export default function AdminCareersPage() {
         setCareers([...careers, savedCareer]);
       }
       setDialogOpen(false);
-    } catch (err) {
+    } catch {
       setError('Lỗi khi lưu nghề nghiệp');
     }
   };

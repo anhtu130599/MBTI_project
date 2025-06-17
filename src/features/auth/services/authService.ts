@@ -65,7 +65,7 @@ export class AuthService {
     return { user, token };
   }
 
-  private generateToken(user: User): string {
+  private generateToken(_user: User): string {
     // TODO: Implement JWT token generation
     return 'dummy-token';
   }
@@ -79,7 +79,7 @@ const defaultUserRepository: IUserRepository = {
   async findByUsername(): Promise<User | null> { throw new Error('Not implemented'); },
   async update(): Promise<User> { throw new Error('Not implemented'); },
   async delete(): Promise<void> { throw new Error('Not implemented'); },
-  async findAll(): Promise<any> { throw new Error('Not implemented'); },
+  async findAll(): Promise<{ users: User[]; total: number; page: number; limit: number; }> { throw new Error('Not implemented'); },
   async verifyUser(): Promise<User> { throw new Error('Not implemented'); },
   async updatePassword(): Promise<void> { throw new Error('Not implemented'); },
 };
