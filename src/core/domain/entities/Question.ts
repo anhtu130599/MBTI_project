@@ -4,8 +4,7 @@ export interface Question {
   options: {
     id: string;
     text: string;
-    trait: 'E' | 'I' | 'S' | 'N' | 'T' | 'F' | 'J' | 'P' | null;
-    score: number;
+    value: 'E' | 'I' | 'S' | 'N' | 'T' | 'F' | 'J' | 'P';
   }[];
   category: 'EI' | 'SN' | 'TF' | 'JP';
 } 

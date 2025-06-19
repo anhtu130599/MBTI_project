@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const User = (await import('@/models/User')).default;
-    const Question = (await import('@/models/Question')).default;
+    const Question = (await import('@/core/infrastructure/database/models/Question')).default;
     const PersonalityType = (await import('@/models/PersonalityType')).default;
     const Career = (await import('@/models/Career')).default;
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       totalUsersLastMonth
     ] = await Promise.all([
       User.countDocuments(),
-      Question.countDocuments({ isActive: true }),
+      Question.countDocuments({}),
       PersonalityType.countDocuments(),
       Career.countDocuments(),
       User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),

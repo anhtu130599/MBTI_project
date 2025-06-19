@@ -94,7 +94,7 @@ interface MongoError extends Error {
 }
 
 // API Response utility class
-class ApiResponseUtil {
+export class ApiResponseUtil {
   private static version = '1.0.0';
 
   // Success responses

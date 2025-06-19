@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import dbConnect from '@/lib/mongodb';
+import Career from '@/core/infrastructure/database/models/Career';
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
-    const career = await db.collection('careers').findOne({
-      _id: new ObjectId(params.id)
-    });
+    await dbConnect();
+    const career = await Career.findById(params.id);
 
     if (!career) {
       return NextResponse.json(
@@ -34,22 +32,23 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
+    await dbConnect();
     const updates = await request.json();
     
-    const result = await db.collection('careers').updateOne(
-      { _id: new ObjectId(params.id) },
-      { $set: updates }
+    const career = await Career.findByIdAndUpdate(
+      params.id,
+      updates,
+      { new: true, runValidators: true }
     );
 
-    if (result.matchedCount === 0) {
+    if (!career) {
       return NextResponse.json(
         { error: 'Career not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(career);
   } catch (error) {
     console.error('Error updating career:', error);
     return NextResponse.json(
@@ -64,19 +63,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { db } = await connectToDatabase();
-    const result = await db.collection('careers').deleteOne({
-      _id: new ObjectId(params.id)
-    });
+    await dbConnect();
+    const career = await Career.findByIdAndDelete(params.id);
 
-    if (result.deletedCount === 0) {
+    if (!career) {
       return NextResponse.json(
         { error: 'Career not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ message: 'Career deleted successfully' });
   } catch (error) {
     console.error('Error deleting career:', error);
     return NextResponse.json(

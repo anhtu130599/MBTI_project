@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import dbConnect from '@/lib/mongodb';
+import { TestResult } from '@/models';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -30,19 +32,42 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Mock data for test results over the last 7 days
-    // TODO: Replace with actual test results when TestResult model is implemented
-    const mockTestResults = [
-      { name: '2025-01-20', value: 12 },
-      { name: '2025-01-21', value: 15 },
-      { name: '2025-01-22', value: 8 },
-      { name: '2025-01-23', value: 20 },
-      { name: '2025-01-24', value: 18 },
-      { name: '2025-01-25', value: 25 },
-      { name: '2025-01-26', value: 22 },
-    ];
+    // Get actual test results over the last 7 days
+    await dbConnect();
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const testResults = await TestResult.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sevenDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: '$createdAt'
+            }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          name: '$_id',
+          value: '$count',
+          _id: 0
+        }
+      },
+      {
+        $sort: { name: 1 }
+      }
+    ]);
 
-    return NextResponse.json(mockTestResults);
+    return NextResponse.json(testResults);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(

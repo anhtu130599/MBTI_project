@@ -228,7 +228,7 @@ export async function requireAuth(request: NextRequest, requiredRole?: string) {
       };
     }
     
-    return { success: true, user: decoded as { id: string; role: string; iat: number; exp: number } };
+    return { success: true, user: decoded as unknown as { id: string; role: string; iat: number; exp: number } };
   } catch (_error) {
     return {
       success: false,

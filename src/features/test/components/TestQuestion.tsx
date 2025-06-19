@@ -5,9 +5,9 @@ import {
   Card,
   CardContent,
   Typography,
+  Radio,
   RadioGroup,
   FormControlLabel,
-  Radio,
   Box,
   Fade,
   Paper,
@@ -50,154 +50,70 @@ export const TestQuestion: React.FC<TestQuestionProps> = ({
             value={selectedOption || ''}
             onChange={(e) => onOptionSelect(e.target.value)}
           >
-            {question.options.map((option, index) => {
+            {question.options.map((option) => {
               const isSelected = selectedOption === option.id;
               
               return (
                 <Paper
                   key={option.id}
-                  elevation={isSelected ? 3 : 0}
+                  elevation={isSelected ? 4 : 1}
                   sx={{
-                    mb: 2,
-                    border: 2,
-                    borderColor: isSelected ? 'success.main' : 'divider',
+                    mb: 1.5,
+                    border: 1,
+                    borderColor: isSelected ? 'primary.main' : 'divider',
                     borderRadius: 2,
-                    transition: 'all 0.3s ease-in-out',
-                    backgroundColor: isSelected ? 'success.50' : 'transparent',
+                    transition: 'all 0.2s ease-in-out',
+                    backgroundColor: isSelected ? 'action.selected' : 'transparent',
+                    boxShadow: isSelected ? '0 4px 12px 0 rgba(0,0,0,0.12)' : 'none',
                     '&:hover': {
-                      borderColor: isSelected ? 'success.main' : 'primary.light',
-                      backgroundColor: isSelected ? 'success.50' : 'action.hover',
-                      transform: 'translateY(-1px)',
-                      boxShadow: 2,
+                      borderColor: 'primary.main',
+                      backgroundColor: isSelected ? 'action.selected' : 'action.hover',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 2px 8px 0 rgba(0,0,0,0.1)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0px)',
+                      boxShadow: isSelected ? '0 4px 12px 0 rgba(0,0,0,0.12)' : '0 1px 3px 0 rgba(0,0,0,0.1)',
                     },
                   }}
                 >
                   <FormControlLabel
                     value={option.id}
                     control={
-                      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                        <Radio 
-                          icon={
-                            <Box sx={{ 
-                              width: 24, 
-                              height: 24, 
-                              border: 2, 
-                              borderColor: 'divider', 
-                              borderRadius: '50%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'all 0.2s ease-in-out'
-                            }}>
-                              <Box sx={{ 
-                                width: 8, 
-                                height: 8, 
-                                borderRadius: '50%',
-                                backgroundColor: 'transparent',
-                                transition: 'all 0.2s ease-in-out'
-                              }} />
-                            </Box>
-                          }
-                          checkedIcon={
-                            <Box sx={{ 
-                              width: 24, 
-                              height: 24, 
-                              border: 2, 
-                              borderColor: 'success.main', 
-                              borderRadius: '50%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor: 'success.light',
-                              boxShadow: '0 0 0 4px rgba(76, 175, 80, 0.12)'
-                            }}>
-                              <Box sx={{ 
-                                width: 10, 
-                                height: 10, 
-                                borderRadius: '50%',
-                                backgroundColor: 'success.main',
-                                boxShadow: '0 2px 4px rgba(76, 175, 80, 0.3)'
-                              }} />
-                            </Box>
-                          }
-                          sx={{ 
-                            ml: 1,
-                            '&.Mui-checked': {
-                              color: 'success.main',
-                            }
-                          }} 
-                        />
-                        {isSelected && (
-                          <CheckCircle 
-                            sx={{ 
-                              position: 'absolute',
-                              right: -8,
-                              top: -8,
-                              color: 'success.main',
-                              fontSize: '1rem',
-                              backgroundColor: 'white',
-                              borderRadius: '50%',
-                              zIndex: 1
-                            }} 
-                          />
-                        )}
-                      </Box>
+                      <Radio 
+                        sx={{ 
+                          ml: 0.5,
+                          '&.Mui-checked': {
+                            color: 'primary.main',
+                          },
+                        }}
+                      />
                     }
                     label={
-                      <Box sx={{ py: 1, pr: 2, display: 'flex', alignItems: 'center', flex: 1 }}>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography 
-                            variant="body1" 
-                            sx={{ 
-                              fontWeight: isSelected ? 600 : 400,
-                              color: isSelected ? 'success.dark' : 'text.primary',
-                              mb: 0.5
-                            }}
-                          >
-                            {option.text}
-                          </Typography>
-                          {/* Option letter indicator */}
-                          <Chip
-                            label={String.fromCharCode(65 + index)} // A, B, C, D...
-                            size="small"
-                            variant={isSelected ? "filled" : "outlined"}
-                            color={isSelected ? "success" : "default"}
-                            sx={{ 
-                              fontSize: '0.75rem',
-                              height: 20,
-                              '& .MuiChip-label': {
-                                px: 1
-                              }
-                            }}
-                          />
-                        </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', ml: 1 }}>
+                        <Typography 
+                          variant="body1" 
+                          sx={{ 
+                            flexGrow: 1, 
+                            fontWeight: isSelected ? 'bold' : 'normal', 
+                            color: isSelected ? 'primary.main' : 'text.primary',
+                          }}
+                        >
+                          {option.text}
+                        </Typography>
                         {isSelected && (
-                          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
-                            <Typography 
-                              variant="caption" 
-                              sx={{ 
-                                color: 'success.main',
-                                fontWeight: 600,
-                                mr: 1
-                              }}
-                            >
-                              ✓ Đã chọn
-                            </Typography>
-                          </Box>
+                          <CheckCircle
+                            color="primary"
+                            sx={{ ml: 2, mr: 1 }}
+                          />
                         )}
                       </Box>
                     }
-                    sx={{
-                      m: 0,
+                    sx={{ 
+                      margin: 0, 
                       width: '100%',
-                      padding: '16px 20px',
-                      borderRadius: 2,
-                      '& .MuiFormControlLabel-label': {
-                        flex: 1,
-                      },
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                      },
+                      p: 2,
+                      cursor: 'pointer',
                     }}
                   />
                 </Paper>

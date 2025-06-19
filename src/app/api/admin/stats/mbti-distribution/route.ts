@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import dbConnect from '@/lib/mongodb';
+import { TestResult } from '@/models';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -30,20 +32,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Mock data for MBTI distribution
-    // TODO: Replace with actual data when TestResult model is implemented
-    const mockMbtiDistribution = [
-      { name: 'INTJ', value: 25 },
-      { name: 'INFP', value: 22 },
-      { name: 'ENFP', value: 18 },
-      { name: 'INTP', value: 15 },
-      { name: 'ENTJ', value: 12 },
-      { name: 'INFJ', value: 10 },
-      { name: 'ENFJ', value: 8 },
-      { name: 'ENTP', value: 6 },
-    ];
+    // Get actual MBTI distribution from database
+    await dbConnect();
+    
+    const distribution = await TestResult.aggregate([
+      {
+        $group: {
+          _id: '$personalityType',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          name: '$_id',
+          value: '$count',
+          _id: 0
+        }
+      },
+      {
+        $sort: { value: -1 }
+      }
+    ]);
 
-    return NextResponse.json(mockMbtiDistribution);
+    return NextResponse.json(distribution);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(

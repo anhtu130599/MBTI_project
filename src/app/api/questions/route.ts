@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Question from '@/models/Question';
+import Question from '@/core/infrastructure/database/models/Question';
  
 export async function GET() {
   await dbConnect();
-  const questions = await Question.find({ isActive: true }).sort({ order: 1 });
+  const questions = await Question.find({}).lean();
   return NextResponse.json(questions);
 } 

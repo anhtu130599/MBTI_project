@@ -75,7 +75,7 @@ export class CacheAsideStrategy implements CacheStrategy {
   private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis as IRedisClient;
+      return redis as unknown as IRedisClient;
     } catch {
       return null;
     }
@@ -166,7 +166,7 @@ export class WriteThroughStrategy implements CacheStrategy {
   private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis as IRedisClient;
+      return redis as unknown as IRedisClient;
     } catch {
       return null;
     }
@@ -315,7 +315,7 @@ export class WriteBehindStrategy implements CacheStrategy {
   private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis as IRedisClient;
+      return redis as unknown as IRedisClient;
     } catch {
       return null;
     }
@@ -414,7 +414,7 @@ export class RefreshAheadStrategy implements CacheStrategy {
   private async getRedisClient(): Promise<IRedisClient | null> {
     try {
       const { redis } = await import('@/lib/redis');
-      return redis as IRedisClient;
+      return redis as unknown as IRedisClient;
     } catch {
       return null;
     }

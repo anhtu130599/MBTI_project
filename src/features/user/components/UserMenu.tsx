@@ -9,17 +9,22 @@ import {
   ListItemText,
   Avatar,
   Divider,
+  Box,
+  Typography
 } from '@mui/material';
 import {
   Person as PersonIcon,
   Settings as SettingsIcon,
   ExitToApp as LogoutIcon,
   AdminPanelSettings as AdminIcon,
+  AccountCircle
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
+import { UserResponse } from '@/core/domain/entities';
+import { ROUTES } from '@/shared/constants';
 
 interface UserMenuProps {
-  user: {
+  user: UserResponse | {
     username: string;
     firstName?: string;
     lastName?: string;
@@ -40,20 +45,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-
-  const handleProfileClick = () => {
+  
+  const handleNavigate = (path: string) => {
     handleMenuClose();
-    router.push('/profile');
-  };
-
-  const handleAdminClick = () => {
-    handleMenuClose();
-    router.push('/admin');
-  };
-
-  const handleSettingsClick = () => {
-    handleMenuClose();
-    router.push('/settings');
+    router.push(path);
   };
 
   const handleLogoutClick = () => {
@@ -61,32 +56,34 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
     onLogout();
   };
 
-  // Tạo initials từ firstName/lastName hoặc fallback về username
-  const getInitials = () => {
-    if (user.firstName && user.lastName) {
-      return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
-    } else if (user.firstName) {
-      return user.firstName.charAt(0).toUpperCase();
-    } else if (user.lastName) {
-      return user.lastName.charAt(0).toUpperCase();
-    } else {
-      return user.username.charAt(0).toUpperCase();
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (firstName && lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     }
+    if (firstName) {
+      return firstName.charAt(0).toUpperCase();
+    }
+    return '';
+  };
+
+  const getDisplayName = () => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    if (user.firstName) {
+      return user.firstName;
+    }
+    return user.username;
   };
 
   return (
     <>
       <IconButton
-        size="large"
-        edge="end"
-        aria-label="account of current user"
-        aria-controls="menu-appbar"
-        aria-haspopup="true"
         onClick={handleMenuOpen}
         color="inherit"
       >
-        <Avatar sx={{ width: 32, height: 32 }}>
-          {getInitials()}
+        <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+          {user.firstName ? getInitials(user.firstName, user.lastName) : <AccountCircle />}
         </Avatar>
       </IconButton>
       <Menu
@@ -103,37 +100,45 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
         }}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            minWidth: 240,
+          }
+        }}
       >
-        <MenuItem onClick={handleProfileClick}>
+        <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Typography variant="subtitle1">{getDisplayName()}</Typography>
+            <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+        </Box>
+        <Divider />
+        <MenuItem onClick={() => handleNavigate(ROUTES.PROFILE)}>
           <ListItemIcon>
             <PersonIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Hồ sơ</ListItemText>
+          <ListItemText>Hồ sơ của tôi</ListItemText>
         </MenuItem>
         
-        {/* Chỉ hiển thị cho admin */}
-        {user.role === 'admin' && (
-          <>
-            <MenuItem onClick={handleAdminClick}>
-              <ListItemIcon>
-                <AdminIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Admin Dashboard</ListItemText>
-            </MenuItem>
-            <Divider />
-          </>
-        )}
-        
-        <MenuItem onClick={handleSettingsClick}>
+        <MenuItem onClick={() => handleNavigate(ROUTES.SETTINGS_PROFILE)}>
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Cài đặt</ListItemText>
+          <ListItemText>Cài đặt tài khoản</ListItemText>
         </MenuItem>
+
+        {user.role === 'admin' && (
+          <MenuItem onClick={() => handleNavigate(ROUTES.ADMIN)}>
+            <ListItemIcon>
+              <AdminIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Trang quản trị</ListItemText>
+          </MenuItem>
+        )}
+        
         <Divider />
-        <MenuItem onClick={handleLogoutClick}>
+        <MenuItem onClick={handleLogoutClick} sx={{ color: 'error.main' }}>
           <ListItemIcon>
-            <LogoutIcon fontSize="small" />
+            <LogoutIcon fontSize="small" color="error" />
           </ListItemIcon>
           <ListItemText>Đăng xuất</ListItemText>
         </MenuItem>

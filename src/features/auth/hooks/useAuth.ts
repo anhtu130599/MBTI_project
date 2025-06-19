@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { authService } from '../services/authService';
 
 interface LoginCredentials {
   username: string;
@@ -60,8 +59,22 @@ export function useAuth() {
     setError(null);
     
     try {
-      const result = await authService.register(userData);
-      return result;
+      // Call the actual API endpoint
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      const data = await response.json();
+      return data;
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

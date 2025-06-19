@@ -1,53 +1,56 @@
-import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import User from '@/core/infrastructure/database/models/User';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import bcryptjs from 'bcryptjs';
 
-export async function POST(request: Request) {
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Get user from JWT token
+    const cookieStore = cookies();
+    const token = cookieStore.get('auth-token')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    let payload;
+    try {
+      payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const userId = payload.payload.id;
     const { currentPassword, newPassword } = await request.json();
 
-    const { db } = await connectToDatabase();
-    const user = await db.collection('users').findOne({
-      _id: new ObjectId(userId)
-    });
+    await dbConnect();
+    const user = await User.findById(userId);
 
     if (!user) {
-      return NextResponse.json(
-        { message: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    // Verify current password
+    const isValidPassword = await bcryptjs.compare(currentPassword, user.password);
     if (!isValidPassword) {
-      return NextResponse.json(
-        { message: 'Current password is incorrect' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: { password: hashedPassword } }
-    );
+    // Hash new password
+    const hashedNewPassword = await bcryptjs.hash(newPassword, 12);
 
-    return NextResponse.json({
-      message: 'Password changed successfully'
-    });
+    // Update password
+    await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
+
+    return NextResponse.json({ message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Change password error:', error);
+    console.error('Error changing password:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { error: 'Failed to change password' },
       { status: 500 }
     );
   }

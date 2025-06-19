@@ -1,2 +1,4 @@
-export { ROUTES } from './routes';
-export { API_ENDPOINTS, HTTP_STATUS } from './api'; 
+export * from './api';
+export * from './routes';
+
+export const API_BASE_URL = '/api'; 

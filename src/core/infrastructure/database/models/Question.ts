@@ -21,7 +21,7 @@ const QuestionSchema = new Schema<QuestionDocument>({
       required: true,
       trim: true,
     },
-    type: {
+    value: {
       type: String,
       required: true,
       enum: ['E', 'I', 'S', 'N', 'T', 'F', 'J', 'P'],

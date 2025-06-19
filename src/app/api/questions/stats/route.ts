@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Question from '@/models/Question';
+import Question from '@/core/infrastructure/database/models/Question';
 
 export async function GET() {
   try {
     await dbConnect();
     
     const [totalQuestions, categoryStats] = await Promise.all([
-      Question.countDocuments({ isActive: true }),
+      Question.countDocuments({}),
       Question.aggregate([
-        { $match: { isActive: true } },
         { $group: { _id: '$category', count: { $sum: 1 } } }
       ])
     ]);

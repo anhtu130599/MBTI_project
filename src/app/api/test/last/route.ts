@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import TestResult from '@/models/TestResult';
+import { TestResult } from '@/models';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -20,7 +20,7 @@ export async function GET() {
     }
     const userId = payload.payload.id;
     await dbConnect();
-    const result = await TestResult.findOne({ userId });
+    const result = await TestResult.findOne({ userId }).sort({ createdAt: -1 });
     if (!result) {
       return NextResponse.json({ error: 'Chưa có kết quả.' }, { status: 404 });
     }

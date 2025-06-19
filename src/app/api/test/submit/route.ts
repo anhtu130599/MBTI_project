@@ -1,102 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import TestResult from '@/models/TestResult';
+// import { TestResult } from '@/models'; // Không dùng trong submit route
+import QuestionModel from '@/core/infrastructure/database/models/Question'; // Import the correct Question model
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import mongoose from 'mongoose';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-interface ApiOption {
-  id: string;
+interface DbQuestion {
+  _id: mongoose.Types.ObjectId;
   text: string;
-  score: number;
-  trait: string;
-}
-
-interface ApiQuestion {
-  id: string;
-  text: string;
-  options: ApiOption[];
+  options: { id: string; text: string; value: string }[];
+  category: string;
 }
 
 // Hàm tính toán loại tính cách MBTI dựa trên câu trả lời
 async function calculateMBTI(answers: Record<string, string>): Promise<{
   type: string;
   scores: {
-    E: number;
-    I: number;
-    S: number;
-    N: number;
-    T: number;
-    F: number;
-    J: number;
-    P: number;
-  }
+    E: number; I: number; S: number; N: number;
+    T: number; F: number; J: number; P: number;
+  };
+  percentages: {
+    E: number; I: number; S: number; N: number;
+    T: number; F: number; J: number; P: number;
+  };
+  total_questions: number;
 }> {
-  // Tính điểm cho từng thang đo
-  let E = 0, I = 0; // Extraversion vs. Introversion
-  let S = 0, N = 0; // Sensing vs. Intuition
-  let T = 0, F = 0; // Thinking vs. Feeling
-  let J = 0, P = 0; // Judging vs. Perceiving
+  await dbConnect();
+  const questions = await QuestionModel.find({}).lean() as unknown as DbQuestion[];
   
-  console.log('🧮 Calculating MBTI from answers:', answers);
+  const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+  let matchedAnswers = 0;
   
-  // Lấy câu hỏi từ API (sử dụng dữ liệu static thay vì database)
-  const questionsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/test/questions`);
-  const questionsData: { questions: ApiQuestion[] } = await questionsResponse.json();
-  const questions = questionsData.questions;
-  
-  console.log('📝 Total questions loaded:', questions.length);
-  
-  // Phân tích câu trả lời
+  // Calculating MBTI from user answers
+
   for (const [questionId, optionId] of Object.entries(answers)) {
-    const question = questions.find((q) => q.id === questionId);
-    if (!question) {
-      console.log(`❌ Question not found: ${questionId}`);
-      continue;
-    }
+    const question = questions.find(q => q._id.toString() === questionId);
+    if (!question) continue;
+
+    const option = question.options.find(opt => opt.id === optionId);
+    if (!option || !option.value) continue;
     
-    const option = question.options.find((opt) => opt.id === optionId);
-    if (!option) {
-      console.log(`❌ Option not found: ${optionId} for question ${questionId}`);
-      continue;
-    }
-    
-    const score = option.score || 0;
-    const trait = option.trait;
-    
-    console.log(`✅ Q${questionId}: ${option.text} → ${trait}(${score})`);
-    
-    // Cộng điểm theo trait
-    if (trait) {
-      switch (trait) {
-        case 'E': E += score; break;
-        case 'I': I += score; break;
-        case 'S': S += score; break;
-        case 'N': N += score; break;
-        case 'T': T += score; break;
-        case 'F': F += score; break;
-        case 'J': J += score; break;
-        case 'P': P += score; break;
-      }
+    const trait = option.value as keyof typeof scores;
+    if (trait in scores) {
+      scores[trait]++;
+      matchedAnswers++;
+      // Matched answer for trait calculation
     }
   }
   
-  console.log('📊 Final scores:', { E, I, S, N, T, F, J, P });
+  // CRITICAL CHECK: If no answers were matched, something is wrong with the IDs.
+  if (matchedAnswers === 0 && Object.keys(answers).length > 0) {
+    console.error('FATAL: No answers could be matched to questions from the database. Check for ID mismatches.');
+    // You might want to return an error response here in a real application
+  }
+
+  // Calculate percentages based on actual scores
+  const totalQuestions = matchedAnswers;
   
-  // Xác định loại tính cách (dominant trait wins)
+  // Tính phần trăm cho mỗi cặp trait
+  const percentages = {
+    E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0
+  };
+  
+  // EI dimension
+  const totalEI = scores.E + scores.I;
+  if (totalEI > 0) {
+    percentages.E = Math.round((scores.E / totalEI) * 100);
+    percentages.I = Math.round((scores.I / totalEI) * 100);
+  }
+  
+  // SN dimension  
+  const totalSN = scores.S + scores.N;
+  if (totalSN > 0) {
+    percentages.S = Math.round((scores.S / totalSN) * 100);
+    percentages.N = Math.round((scores.N / totalSN) * 100);
+  }
+  
+  // TF dimension
+  const totalTF = scores.T + scores.F;
+  if (totalTF > 0) {
+    percentages.T = Math.round((scores.T / totalTF) * 100);
+    percentages.F = Math.round((scores.F / totalTF) * 100);
+  }
+  
+  // JP dimension
+  const totalJP = scores.J + scores.P;
+  if (totalJP > 0) {
+    percentages.J = Math.round((scores.J / totalJP) * 100);
+    percentages.P = Math.round((scores.P / totalJP) * 100);
+  }
+  
   const type = [
-    E > I ? 'E' : 'I',
-    S > N ? 'S' : 'N', 
-    T > F ? 'T' : 'F',
-    J > P ? 'J' : 'P'
+    scores.E >= scores.I ? 'E' : 'I',
+    scores.S >= scores.N ? 'S' : 'N', 
+    scores.T >= scores.F ? 'T' : 'F',
+    scores.J >= scores.P ? 'J' : 'P'
   ].join('');
   
-  console.log('🎯 Calculated MBTI type:', type);
+  // MBTI type calculated successfully
   
-  return {
-    type,
-    scores: { E, I, S, N, T, F, J, P }
-  };
+  return { type, scores, percentages, total_questions: totalQuestions };
 }
 
 // Hàm lấy thông tin nghề nghiệp phù hợp dựa trên loại tính cách
@@ -127,6 +132,8 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     
+    // Process test submission
+    
     // Kiểm tra dữ liệu đầu vào
     if (!data.answers || typeof data.answers !== 'object') {
       return NextResponse.json(
@@ -146,50 +153,35 @@ export async function POST(request: NextRequest) {
     if (token) {
       try {
         const payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-        userId = payload.payload.id;
-      } catch {
+        userId = payload.payload.id || payload.payload.userId;
+        console.log('🔑 Found logged in user:', userId);
+      } catch (_error) {
+        console.log('🔑 Invalid token, continuing as guest');
         // Ignore invalid token, allow guest access
       }
+    } else {
+      console.log('🔑 No auth token found, user is guest');
     }
     
     // Lấy gợi ý nghề nghiệp
     const careerRecommendations = getCareerRecommendations(mbtiResult.type);
     
-    if (userId) {
-      // Lưu kết quả cho user đã đăng nhập
-      await dbConnect();
-      const testResult = await TestResult.findOneAndUpdate(
-        { userId },
-        {
-          personalityType: mbtiResult.type,
-          userId,
-          careerRecommendations,
-          scores: mbtiResult.scores
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-      
-      return NextResponse.json({
-        id: testResult._id,
-        personalityType: testResult.personalityType,
-        type: testResult.personalityType, // Compatibility
-        careerRecommendations: testResult.careerRecommendations,
-        scores: mbtiResult.scores,
-        timestamp: testResult.createdAt
-      });
-    } else {
-      // Trả về kết quả cho guest user
-      return NextResponse.json({
-        personalityType: mbtiResult.type,
-        type: mbtiResult.type, // Compatibility
-        careerRecommendations,
-        scores: mbtiResult.scores,
-        timestamp: new Date()
-      });
-    }
+    // Trả về kết quả cho tất cả user (không lưu tự động)
+    console.log('📤 Trả về kết quả test (không lưu tự động)');
+    return NextResponse.json({
+      success: true,
+      personalityType: mbtiResult.type,
+      type: mbtiResult.type, // Compatibility
+      careerRecommendations,
+      scores: mbtiResult.scores,
+      percentages: mbtiResult.percentages,
+      total_questions: mbtiResult.total_questions,
+      timestamp: new Date(),
+      isLoggedIn: !!userId // Báo cho frontend biết user đã login chưa
+    });
     
-  } catch (error) {
-    console.error('Error processing test submission:', error);
+  } catch (_error) {
+    console.error('Error processing test submission:', _error);
     return NextResponse.json(
       { error: 'Failed to process test submission' },
       { status: 500 }

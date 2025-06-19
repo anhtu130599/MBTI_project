@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, createRef } from 'react';
 import {
   Container,
   Typography,
@@ -43,6 +43,18 @@ export default function TestQuestionsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // Ref for scrolling
+  const mainContentRef = useRef<HTMLDivElement>(null);
+  const questionListRef = useRef<HTMLDivElement>(null);
+  const questionRefs = useRef<React.RefObject<HTMLLIElement>[]>([]);
+  
+  // Initialize refs array
+  if (questionRefs.current.length !== questions.length) {
+    questionRefs.current = Array(questions.length)
+      .fill(null)
+      .map((_, i) => questionRefs.current[i] || createRef<HTMLLIElement>());
+  }
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -58,23 +70,38 @@ export default function TestQuestionsPage() {
     fetchQuestions();
   }, []);
 
+  useEffect(() => {
+    // Scroll main content to top & sidebar to current question
+    mainContentRef.current?.scrollIntoView({ behavior: 'smooth' });
+    
+    setTimeout(() => {
+      questionRefs.current[currentQuestionIndex]?.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }, 300); // Add a small delay to prevent scroll conflicts
+  }, [currentQuestionIndex]);
+
   const handleOptionSelect = (optionId: string) => {
     const currentQuestion = questions[currentQuestionIndex];
+    
+    // ENHANCED DEBUG LOG
+    // Handle option selection
+    // Update answers with selected option
+    
     const newAnswers = {
       ...answers,
       [currentQuestion.id]: optionId,
     };
     
-    // Debug log để kiểm tra
-    console.log('Answer selected:', {
-      questionIndex: currentQuestionIndex,
-      questionId: currentQuestion.id,
-      optionId,
-      newAnswers,
-      answersCount: Object.keys(newAnswers).length
-    });
+    // Apply new answers
     
     setAnswers(newAnswers);
+    
+    // Verify update after a short delay
+    setTimeout(() => {
+      console.log('🎯 Answers state after setState (delayed check):', answers);
+    }, 100);
   };
 
   const handleNext = () => {
@@ -177,7 +204,7 @@ export default function TestQuestionsPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Grid container spacing={4}>
         {/* Main Content */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={8} ref={mainContentRef}>
           <Box mb={4}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
               Bài kiểm tra MBTI
@@ -305,7 +332,7 @@ export default function TestQuestionsPage() {
               <Divider sx={{ mb: 2 }} />
 
               {/* Question List */}
-              <Box sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <Box ref={questionListRef} sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Danh sách câu hỏi:
                 </Typography>
@@ -342,7 +369,7 @@ export default function TestQuestionsPage() {
                     const isLocked = !isAccessible;
                     
                     return (
-                      <ListItem key={question.id} disablePadding>
+                      <ListItem key={question.id} disablePadding ref={questionRefs.current[index]}>
                         <ListItemButton
                           onClick={() => goToQuestion(index)}
                           selected={isCurrent}

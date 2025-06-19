@@ -211,7 +211,7 @@ export class CacheHelper {
     
     try {
       const { redis } = await import('@/core/infrastructure/cache/redis');
-      return redis as IRedisClient;
+      return redis as unknown as IRedisClient;
     } catch {
       return null;
     }
@@ -442,8 +442,8 @@ export function Cached(ttl: number = CacheTTL.MEDIUM) {
     const originalMethod = descriptor.value;
     const cacheHelper = new CacheHelper();
 
-    descriptor.value = async function (...args: unknown[]) {
-      const cacheKey = `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`;
+    descriptor.value = async function (this: object, ...args: unknown[]) {
+      const cacheKey = `${(this as { constructor: { name: string } }).constructor.name}:${propertyKey}:${JSON.stringify(args)}`;
       
       return cacheHelper.cached(
         cacheKey,

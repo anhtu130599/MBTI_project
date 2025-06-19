@@ -277,10 +277,11 @@ class DatabaseIndexManager {
       }
 
       // Create the index
-      await collection.createIndex(indexDef.keys, {
+      const indexOptions: Record<string, unknown> = {
         name: indexDef.indexName,
         ...indexDef.options,
-      });
+      };
+      await collection.createIndex(indexDef.keys, indexOptions);
 
       await logger.info(
         `Created index ${indexDef.indexName} on ${indexDef.collectionName}`,
@@ -336,14 +337,15 @@ class DatabaseIndexManager {
       );
 
       // Find unused indexes (excluding _id_ index)
-      const unusedIndexes = indexStats.filter((stat: IndexStat) => 
-        stat.accesses.ops === 0 && stat.name !== '_id_'
-      );
+      const unusedIndexes = indexStats.filter((stat: Document) => {
+        const indexStat = stat as IndexStat;
+        return indexStat.accesses?.ops === 0 && indexStat.name !== '_id_';
+      });
       if (unusedIndexes.length > 0) {
         await logger.warn(
           `Found ${unusedIndexes.length} unused indexes in ${collectionName}`,
           'DatabaseIndexManager',
-          { unusedIndexes: unusedIndexes.map((idx: IndexStat) => idx.name) }
+          { unusedIndexes: unusedIndexes.map((idx: Document) => (idx as IndexStat).name) }
         );
       }
 
@@ -438,20 +440,21 @@ class DatabaseIndexManager {
       ]).toArray();
 
       // Find unused indexes (excluding _id_ index)
-      const unusedIndexes = indexStats.filter((stat: IndexStat) => 
-        stat.accesses.ops === 0 && stat.name !== '_id_'
-      );
+      const unusedIndexes = indexStats.filter((stat: Document) => {
+        const indexStat = stat as IndexStat;
+        return indexStat.accesses?.ops === 0 && indexStat.name !== '_id_';
+      });
 
       for (const unusedIndex of unusedIndexes) {
         try {
-          await collection.dropIndex(unusedIndex.name);
+          await collection.dropIndex((unusedIndex as IndexStat).name);
           await logger.info(
-            `Dropped unused index: ${unusedIndex.name} from ${collectionName}`,
+            `Dropped unused index: ${(unusedIndex as IndexStat).name} from ${collectionName}`,
             'DatabaseIndexManager'
           );
         } catch (error) {
           await logger.error(
-            `Failed to drop index ${unusedIndex.name}`,
+            `Failed to drop index ${(unusedIndex as IndexStat).name}`,
             error as Error,
             'DatabaseIndexManager'
           );
@@ -507,11 +510,14 @@ class DatabaseIndexManager {
             name: collectionName,
             indexCount: stats.nindexes || 0,
             totalSize: stats.totalIndexSize || 0,
-            usage: indexStats.map((idx: IndexStat) => ({
-              name: idx.name,
-              uses: idx.accesses.ops,
-              since: idx.accesses.since
-            }))
+            usage: indexStats.map((idx: Document) => {
+              const indexStat = idx as IndexStat;
+              return {
+                name: indexStat.name,
+                uses: indexStat.accesses?.ops || 0,
+                since: indexStat.accesses?.since || new Date()
+              };
+            })
           });
 
         } catch (error) {

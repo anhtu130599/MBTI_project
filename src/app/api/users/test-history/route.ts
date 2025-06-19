@@ -18,29 +18,44 @@ async function getAuthenticatedUser(request: NextRequest) {
   }
 }
 
-interface TestHistoryItem {
-  _id: string;
-  personalityType: string;
-  createdAt: string;
-}
+// interface TestHistoryDocument {
+//   _id: {
+//     toString: () => string;
+//   };
+//   personalityType: string;
+//   scores: Record<string, number>;
+//   percentages: Record<string, number>;
+//   careerRecommendations: string[];
+//   totalQuestions: number;
+//   createdAt: Date;
+// }
 
 export async function GET(request: NextRequest) {
   try {
-    await getAuthenticatedUser(request);
+    const userId = await getAuthenticatedUser(request);
     
     await dbConnect();
     
-    // For now, return empty array since we don't have test results collection yet
-    // TODO: Replace with actual TestResult model when implemented
-    const testHistory: TestHistoryItem[] = [];
-    
-    // Example of how it would work with actual TestResult model:
-    // const TestResult = (await import('@/models/TestResult')).default;
-    // const testHistory = await TestResult.find({ userId })
-    //   .sort({ createdAt: -1 })
-    //   .lean();
+    // Lấy lịch sử test thực tế từ database
+    const { TestResult } = await import('@/models');
+    const testHistory = await TestResult.find({ userId })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return NextResponse.json(testHistory);
+    // Transform data to match expected format
+    const formattedHistory = testHistory.map((result) => ({
+      id: String(result._id),
+      personalityType: result.personalityType,
+      type: result.personalityType, // For compatibility
+      scores: result.scores,
+      percentages: result.percentages,
+      careerRecommendations: result.careerRecommendations,
+      totalQuestions: result.totalQuestions,
+      createdAt: result.createdAt,
+      timestamp: result.createdAt
+    }));
+
+    return NextResponse.json(formattedHistory);
   } catch (e) {
     const error = e as Error;
     console.error('Get test history error:', error);

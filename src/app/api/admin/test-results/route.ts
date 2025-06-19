@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import TestResult from '@/models/TestResult';
+import { TestResult } from '@/models';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';

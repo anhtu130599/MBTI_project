@@ -31,12 +31,50 @@ export interface TestSubmissionResponse {
     J: number;
     P: number;
   };
+  percentages?: {
+    E: number;
+    I: number;
+    S: number;
+    N: number;
+    T: number;
+    F: number;
+    J: number;
+    P: number;
+  };
+  total_questions?: number;
   timestamp: Date | string;
   careers?: {
     title: string;
     description: string;
     matchScore: number;
   }[];
+}
+
+// 🎯 INTERFACE CHO LAST TEST RESULT
+export interface LastTestResult {
+  percentages: {
+    E: number;
+    I: number;
+    S: number;
+    N: number;
+    T: number;
+    F: number;
+    J: number;
+    P: number;
+  };
+  scores: {
+    E: number;
+    I: number;
+    S: number;
+    N: number;
+    T: number;
+    F: number;
+    J: number;
+    P: number;
+  };
+  total_questions: number;
+  type: string;
+  timestamp: string;
 }
 
 interface ApiQuestion extends Omit<Question, 'id'> {
@@ -52,15 +90,16 @@ export const testService = {
     }
     const data = await response.json();
     
-    // Map _id thành id để frontend sử dụng nhất quán
-    return data.map((question: ApiQuestion) => ({
-      ...question,
-      id: question._id || question.id, // Ưu tiên _id từ MongoDB, fallback về id
-      options: question.options?.map((option: ApiQuestion['options'][number] & { _id: string }) => ({
-        ...option,
-        id: option._id || option.id
-      })) || []
-    }));
+    // CORRECTED MAPPING:
+    // Ensure that the 'id' field used by the frontend is always the
+    // '_id' string from the database to guarantee consistency.
+    return data.map((question: ApiQuestion) => {
+      return {
+        ...question,
+        id: question._id, // Explicitly use the database _id
+        options: question.options || [],
+      };
+    });
   },
 
   async getQuestionStats(): Promise<QuestionStats> {
@@ -73,6 +112,10 @@ export const testService = {
   },
 
   async submitAnswers(answers: Record<string, string>): Promise<TestSubmissionResponse> {
+    // DEBUG: Log dữ liệu trước khi gửi
+    console.log('🚀 testService.submitAnswers - Data being sent:', answers);
+    console.log('🚀 testService.submitAnswers - JSON stringified:', JSON.stringify({ answers }));
+    
     const response = await fetch('/api/test/submit', {
       method: 'POST',
       headers: {
@@ -85,6 +128,44 @@ export const testService = {
       throw new Error('Failed to submit answers');
     }
 
-    return response.json();
+    const result = await response.json();
+    
+    // 🎯 LƯU KẾT QUẢ VÀO LOCALSTORAGE ĐỂ SỬ DỤNG CHO TRANG KẾT QUẢ
+    if (result.percentages && result.scores) {
+      const testResultData = {
+        percentages: result.percentages,
+        scores: result.scores,
+        total_questions: result.total_questions || 0,
+        type: result.personalityType || result.type,
+        timestamp: new Date().toISOString(),
+        isLoggedIn: result.isLoggedIn || false
+      };
+      localStorage.setItem('last_test_result', JSON.stringify(testResultData));
+      localStorage.setItem('last_test_answers', JSON.stringify(answers)); // Lưu answers để có thể save vào history
+      console.log('🎯 Saved test result to localStorage:', testResultData);
+      console.log('🎯 Saved test answers to localStorage:', answers);
+    }
+
+    return result;
+  },
+
+  // 🎯 PHƯƠNG THỨC MỚI: LẤY KẾT QUẢ TEST CUỐI CÙNG TỪ LOCALSTORAGE
+  getLastTestResult(): LastTestResult | null {
+    try {
+      const saved = localStorage.getItem('last_test_result');
+      if (saved) {
+        const parsed = JSON.parse(saved) as LastTestResult;
+        console.log('🎯 Retrieved test result from localStorage:', parsed);
+        return parsed;
+      }
+    } catch (error) {
+      console.error('Error getting last test result:', error);
+    }
+    return null;
+  },
+
+  // 🎯 XÓA KẾT QUẢ TEST (khi cần)
+  clearLastTestResult(): void {
+    localStorage.removeItem('last_test_result');
   },
 }; 

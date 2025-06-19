@@ -19,6 +19,7 @@ import {
   Button,
   Stack,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -31,6 +32,9 @@ import {
   Lightbulb,
   Celebration,
   School,
+  CheckCircle,
+  Save,
+  // Login, // Not used
 } from '@mui/icons-material';
 import { PersonalityDetailInfo } from '@/core/domain/entities/MBTIDimensionInfo';
 
@@ -43,6 +47,16 @@ interface ExtendedPersonalityInfo extends PersonalityDetailInfo {
     requirements?: string[];
     location_type?: string;
   }>;
+  actual_percentages?: {
+    E: number; I: number; S: number; N: number;
+    T: number; F: number; J: number; P: number;
+  };
+  actual_scores?: {
+    E: number; I: number; S: number; N: number;
+    T: number; F: number; J: number; P: number;
+  };
+  total_questions?: number;
+  isLoggedIn?: boolean;
 }
 
 function TestResultContent() {
@@ -50,6 +64,9 @@ function TestResultContent() {
   const [result, setResult] = useState<ExtendedPersonalityInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const type = searchParams.get('type');
@@ -65,7 +82,32 @@ function TestResultContent() {
         throw new Error('Failed to fetch result');
       }
       const data = await response.json();
-      setResult(data.data);
+      
+      // 🎯 LẤY DỮ LIỆU THỰC TẾ TỪ LOCALSTORAGE
+      let actualData = null;
+      try {
+        const saved = localStorage.getItem('last_test_result');
+        if (saved) {
+          actualData = JSON.parse(saved);
+          console.log('🎯 Got actual test data from localStorage:', actualData);
+          
+          // Kiểm tra xem data có phù hợp với type hiện tại không
+          if (actualData.type !== type) {
+            console.log('🎯 Test result type mismatch, clearing data');
+            actualData = null;
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing localStorage data:', error);
+      }
+      
+      setResult({
+        ...data.data,
+        actual_percentages: actualData?.percentages,
+        actual_scores: actualData?.scores,
+        total_questions: actualData?.total_questions,
+        isLoggedIn: actualData?.isLoggedIn
+      });
     } catch (err) {
       setError('Không thể tải kết quả. Vui lòng thử lại sau.');
       console.error('Error fetching result:', err);
@@ -74,8 +116,81 @@ function TestResultContent() {
     }
   };
 
+  useEffect(() => {
+    // Check if user is logged in
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      setIsLoggedIn(response.ok);
+    } catch {
+      setIsLoggedIn(false);
+    }
+  };
+
+  const saveToHistory = async () => {
+    if (!isLoggedIn) {
+      // Chuyển hướng đến trang đăng nhập
+      window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+      return;
+    }
+
+    if (!result?.actual_percentages || !result?.actual_scores) {
+      alert('Không có dữ liệu test thực tế để lưu. Vui lòng làm lại bài test.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const testData = JSON.parse(localStorage.getItem('last_test_result') || '{}');
+      const lastAnswers = JSON.parse(localStorage.getItem('last_test_answers') || '{}');
+      
+      if (!testData.type) {
+        throw new Error('Không tìm thấy dữ liệu test');
+      }
+
+      // Gọi API để lưu kết quả
+      const response = await fetch('/api/test/save-result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          testResult: testData,
+          answers: lastAnswers
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSaveSuccess(true);
+        alert(data.message || 'Kết quả đã được lưu thành công!');
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        if (data.requireLogin) {
+          window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+        } else {
+          throw new Error(data.error || 'Không thể lưu kết quả');
+        }
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Có lỗi xảy ra khi lưu kết quả. Vui lòng thử lại.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getTraitPercentage = (trait: string) => {
     if (!result) return 0;
+    
+    if (result.actual_percentages) {
+      return result.actual_percentages[trait as keyof typeof result.actual_percentages] || 0;
+    }
+    
     return result.trait_percentages[trait as keyof typeof result.trait_percentages] || 0;
   };
 
@@ -158,12 +273,31 @@ function TestResultContent() {
       {/* MBTI Dimensions Progress */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Box display="flex" alignItems="center" mb={3}>
-            <TrendingUp sx={{ mr: 2, color: 'primary.main' }} />
-            <Typography variant="h5" fontWeight="bold">
-              Tỷ lệ phần trăm các xu hướng MBTI
-            </Typography>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+            <Box display="flex" alignItems="center">
+              <TrendingUp sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography variant="h5" fontWeight="bold">
+                Tỷ lệ phần trăm các xu hướng MBTI
+              </Typography>
+            </Box>
+            {result.actual_percentages && (
+              <Chip 
+                icon={<CheckCircle />}
+                label={`Dựa trên ${result.total_questions || 0} câu trả lời của bạn`}
+                color="success"
+                size="small"
+              />
+            )}
           </Box>
+          
+          {!result.actual_percentages && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Typography variant="body2">
+                <strong>Lưu ý:</strong> Đây là dữ liệu mẫu chung cho loại tính cách {result.type}. 
+                Để có phần trăm chính xác theo bài test của bạn, vui lòng làm lại bài test.
+              </Typography>
+            </Alert>
+          )}
           
           {result.dimensions.map((dimension, index) => {
             const traitA = dimension.trait_a;
@@ -471,8 +605,42 @@ function TestResultContent() {
         </CardContent>
       </Card>
 
+      {/* Save Status Alerts */}
+      {saveSuccess && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          Đã lưu kết quả vào lịch sử tài khoản thành công!
+        </Alert>
+      )}
+      
+      {!isLoggedIn && result?.actual_percentages && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>💡 Lưu ý:</strong> Bạn chưa đăng nhập. Để lưu kết quả vào lịch sử tài khoản, 
+            vui lòng sử dụng nút &quot;Lưu vào lịch sử&quot; bên dưới.
+          </Typography>
+        </Alert>
+      )}
+
       {/* Action Buttons */}
       <Box textAlign="center" mt={4}>
+        {/* Nút lưu vào lịch sử - luôn hiển thị */}
+        {result?.actual_percentages && (
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+            sx={{ mr: 2 }}
+            onClick={saveToHistory}
+            disabled={isSaving || saveSuccess}
+            color={saveSuccess ? "success" : isLoggedIn ? "primary" : "secondary"}
+          >
+            {isSaving ? 'Đang lưu...' : 
+             saveSuccess ? 'Đã lưu thành công' : 
+             isLoggedIn ? 'Lưu vào lịch sử tài khoản' : 
+             'Đăng nhập và lưu kết quả'}
+          </Button>
+        )}
+        
         <Button
           variant="contained"
           size="large"
