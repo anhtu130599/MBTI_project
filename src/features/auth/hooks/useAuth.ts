@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface LoginCredentials {
   username: string;
@@ -16,6 +17,7 @@ interface RegisterData {
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -28,6 +30,7 @@ export function useAuth() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify(credentials),
       });
 
@@ -38,8 +41,13 @@ export function useAuth() {
 
       const data = await response.json();
       
-      // Store user data or token as needed
-      // You might want to store this in localStorage, context, etc.
+      // Redirect based on where user came from or to home page
+      if (data.success) {
+        // Check if there's a return URL in sessionStorage or go to home
+        const returnUrl = sessionStorage.getItem('returnUrl') || '/';
+        sessionStorage.removeItem('returnUrl'); // Clean up
+        router.push(returnUrl);
+      }
       
       return data;
     } catch (err: unknown) {
@@ -94,6 +102,8 @@ export function useAuth() {
         method: 'POST',
         credentials: 'include',
       });
+      // Redirect to login page after logout
+      router.push('/login');
     } finally {
       setIsLoading(false);
     }

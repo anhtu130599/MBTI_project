@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
-import { useAuth } from '../hooks/useAuth';
 
 interface AuthModalsProps {
   open: boolean;
@@ -29,7 +28,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   onRegisterSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
-  const { login, isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Reset activeTab when initialTab changes or modal opens
   useEffect(() => {
@@ -43,7 +42,32 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   };
 
   const handleLogin = async (data: { username: string; password: string }) => {
-    await login(data);
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const responseData = await response.json();
+        throw new Error(responseData.message || 'Login failed');
+      }
+
+      const responseData = await response.json();
+      
+      if (responseData.success) {
+        onLoginSuccess?.(); // Let Header handle the rest
+      }
+    } catch (error) {
+      setIsLoading(false);
+      throw error; // Re-throw for LoginForm to handle
+    }
+    setIsLoading(false);
   };
 
   return (

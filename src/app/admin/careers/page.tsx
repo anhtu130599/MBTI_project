@@ -63,7 +63,7 @@ export default function AdminCareersPage() {
         return;
       }
       const data = await res.json();
-      if (data.user.role !== 'admin') {
+      if (!data.success || !data.data || data.data.role !== 'admin') {
         router.push('/');
         return;
       }

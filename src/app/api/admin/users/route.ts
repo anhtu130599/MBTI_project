@@ -1,39 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
+import { verifyAdminAuth } from '@/shared/utils/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('auth-token')?.value;
-    if (!token) {
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      console.log('Admin auth failed in /admin/users:', authResult.error);
       return NextResponse.json(
-        { error: 'Không có quyền truy cập' },
-        { status: 403 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
-    let payload;
-    try {
-      payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    } catch {
-      return NextResponse.json(
-        { error: 'Token không hợp lệ hoặc đã hết hạn' },
-        { status: 403 }
-      );
-    }
-    if (payload.payload.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Không có quyền truy cập' },
-        { status: 403 }
-      );
-    }
+
+    console.log('Admin authenticated in /admin/users:', authResult.username);
+
     await dbConnect();
     const users = await User.find({}, '-password -verificationToken -verificationTokenExpires')
       .sort({ createdAt: -1 });
+    
+    console.log('Found users:', users.length);
     return NextResponse.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);

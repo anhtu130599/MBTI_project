@@ -2,9 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Card, CardContent, Grid, Box, CircularProgress, Alert, List, ListItem, ListItemText, Divider, Button, Chip } from '@mui/material';
-import { userService } from '@/features/user/services/userService';
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants';
+
+// Interface cho user từ API
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: string;
+  emailVerified?: boolean;
+  createdAt: string;
+  lastLogin?: string;
+}
 
 // Interface cho test history từ API
 interface TestHistoryItem {
@@ -26,7 +36,7 @@ interface TestHistoryItem {
 }
 
 export default function UserProfilePage() {
-  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [testHistory, setTestHistory] = useState<TestHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,17 +44,39 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userResponse, historyResponse] = await Promise.all([
-          fetch('/api/auth/me'),
-          userService.getTestHistory()
-        ]);
+        // Gọi API để lấy thông tin user
+        const userResponse = await fetch('/api/auth/me', {
+          credentials: 'include', // Include cookies
+        });
         
+        let userData = null;
         if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setUser(userData.data);
+          const userResult = await userResponse.json();
+          // API trả về { success: true, data: user }
+          if (userResult.success && userResult.data) {
+            userData = userResult.data;
+            setUser(userData);
+          } else {
+            throw new Error('Invalid response format');
+          }
+        } else {
+          throw new Error('Không thể tải thông tin người dùng');
+        }
+
+        // Gọi API để lấy lịch sử làm bài
+        const historyResponse = await fetch('/api/users/test-history', {
+          credentials: 'include', // Include cookies
+        });
+        
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          // API trả về array trực tiếp thay vì { data }
+          setTestHistory(Array.isArray(historyData) ? historyData : []);
+        } else {
+          // Nếu không lấy được history, vẫn hiển thị thông tin user
+          setTestHistory([]);
         }
         
-        setTestHistory(historyResponse.data || []);
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Không thể tải dữ liệu.';
         setError(errorMessage);
@@ -68,14 +100,26 @@ export default function UserProfilePage() {
             <CardContent>
               <Typography variant="h6" gutterBottom>Thông tin cá nhân</Typography>
               <Divider sx={{ my: 2 }} />
-              {user ? (
+              {isLoading ? (
+                <CircularProgress />
+              ) : error ? (
+                <Alert severity="error">{error}</Alert>
+              ) : user ? (
                 <Box>
-                  <Typography variant="body1"><strong>Họ và tên:</strong> {user.name}</Typography>
+                  <Typography variant="body1"><strong>Tên người dùng:</strong> {user.username}</Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}><strong>Email:</strong> {user.email}</Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}><strong>Vai trò:</strong> {user.role}</Typography>
+                  {user.emailVerified !== undefined && (
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      <strong>Email đã xác thực:</strong> {user.emailVerified ? 'Có' : 'Chưa'}
+                    </Typography>
+                  )}
+                  <Typography variant="body1" sx={{ mt: 1 }}>
+                    <strong>Tham gia:</strong> {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                  </Typography>
                 </Box>
               ) : (
-                <CircularProgress />
+                <Typography color="text.secondary">Không thể tải thông tin</Typography>
               )}
               <Box sx={{ mt: 3, textAlign: 'center' }}>
                 <Button component={Link} href={ROUTES.SETTINGS_PROFILE} variant="contained">
@@ -96,7 +140,7 @@ export default function UserProfilePage() {
                   <CircularProgress />
                 </Box>
               ) : error ? (
-                <Alert severity="error">{error}</Alert>
+                <Alert severity="warning">Không thể tải lịch sử làm bài</Alert>
               ) : testHistory.length > 0 ? (
                 <List>
                   {testHistory.map((result, index) => (

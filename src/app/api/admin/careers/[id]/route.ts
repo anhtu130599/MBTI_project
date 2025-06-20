@@ -1,34 +1,22 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Career from '@/models/Career';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-async function checkAdmin() {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
-  if (!token) return false;
-  try {
-    const payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    return payload.payload.role === 'admin';
-  } catch {
-    return false;
-  }
-}
+import { verifyAdminAuth } from '@/shared/utils/auth';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = await checkAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
     }
 
     await dbConnect();
+    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
     const career = await Career.findById(params.id);
     
     if (!career) {
@@ -43,18 +31,22 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = await checkAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
     }
 
     const data = await request.json();
     await dbConnect();
 
+    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
     const career = await Career.findByIdAndUpdate(
       params.id,
       { ...data, updatedAt: new Date() },
@@ -73,16 +65,20 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = await checkAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
     }
 
     await dbConnect();
+    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
     const career = await Career.findByIdAndDelete(params.id);
 
     if (!career) {

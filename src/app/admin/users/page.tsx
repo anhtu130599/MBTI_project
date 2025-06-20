@@ -61,7 +61,7 @@ export default function AdminUsersPage() {
         return;
       }
       const data = await res.json();
-      if (data.user.role !== "admin") {
+      if (!data.success || !data.data || data.data.role !== "admin") {
         router.push("/");
         return;
       }
@@ -72,7 +72,9 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/admin/users");
+      const response = await fetch("/api/admin/users", {
+        credentials: "include"
+      });
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
       setUsers(data);
@@ -106,6 +108,7 @@ export default function AdminUsersPage() {
       const response = await fetch(`/api/admin/users/${selectedUser._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(editForm),
       });
 
@@ -127,6 +130,7 @@ export default function AdminUsersPage() {
     try {
       const response = await fetch(`/api/admin/users/${selectedUser._id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (!response.ok) throw new Error("Failed to delete user");

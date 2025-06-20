@@ -37,7 +37,11 @@ export const Header: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user);
+        if (data.success && data.data) {
+          setUser(data.data);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -48,6 +52,10 @@ export const Header: React.FC = () => {
   };
 
   const handleLogin = () => {
+    // Save current URL for redirect after login
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('returnUrl', window.location.pathname);
+    }
     setAuthModalTab('login');
     setAuthModalOpen(true);
   };
@@ -76,8 +84,17 @@ export const Header: React.FC = () => {
   };
 
   const handleLoginSuccess = async () => {
-    await fetchUser();
+    await fetchUser(); // Refresh user state in header
     setAuthModalOpen(false);
+    
+    // Handle redirect after successful login from modal
+    if (typeof window !== 'undefined') {
+      const returnUrl = sessionStorage.getItem('returnUrl') || '/';
+      sessionStorage.removeItem('returnUrl');
+      if (returnUrl !== window.location.pathname) {
+        router.push(returnUrl);
+      }
+    }
   };
 
   const handleRegisterSuccess = async () => {
@@ -86,6 +103,14 @@ export const Header: React.FC = () => {
 
   useEffect(() => {
     fetchUser();
+    
+    // Refresh user when window gains focus (helps with login state updates)
+    const handleFocus = () => {
+      fetchUser();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   return (

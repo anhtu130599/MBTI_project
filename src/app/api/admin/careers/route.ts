@@ -1,27 +1,26 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Career from '@/models/Career';
+import { verifyAdminAuth } from '@/shared/utils/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('auth-token')?.value;
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    let payload;
-    try {
-      payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    } catch {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      console.log('Admin auth failed in /admin/careers:', authResult.error);
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
     }
-    if (payload.payload.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    console.log('Admin authenticated in /admin/careers:', authResult.username);
+
     await dbConnect();
+    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
     const careers = await Career.find().sort({ title: 1 });
+    
+    console.log('Found careers:', careers.length);
     return NextResponse.json(careers);
   } catch (error) {
     console.error('Error fetching careers:', error);
@@ -29,22 +28,20 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('auth-token')?.value;
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    let payload;
-    try {
-      payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    } catch {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
     }
-    if (payload.payload.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
     const data = await request.json();
     await dbConnect();
+    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
     const career = new Career(data);
     await career.save();
     return NextResponse.json(career);

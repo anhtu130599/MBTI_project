@@ -47,15 +47,21 @@ export async function POST(request: NextRequest) {
     const iat = Math.floor(Date.now() / 1000);
     const exp = iat + 60 * 60 * 24 * 7; // 7 days
     
-    const token = await new SignJWT({
+    const tokenPayload = {
       userId: user._id.toString(),
       username: user.username,
       role: user.role,
-    })
+    };
+    
+    console.log('Creating JWT with payload:', tokenPayload);
+    
+    const token = await new SignJWT(tokenPayload)
       .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
       .setIssuedAt(iat)
       .setExpirationTime(exp)
       .sign(new TextEncoder().encode(JWT_SECRET));
+
+    console.log('JWT token created, length:', token.length);
 
     // Create response
     const response = NextResponse.json({
@@ -71,6 +77,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Set HTTP-only cookie
+    console.log('Setting auth-token cookie');
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -78,6 +85,8 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+
+    console.log('Login successful for user:', user.username, 'role:', user.role);
 
     return response;
   } catch (error) {

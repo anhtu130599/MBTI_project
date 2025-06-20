@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Drawer, 
@@ -15,7 +15,10 @@ import {
   IconButton,
   Button,
   Divider,
-  Tooltip
+  Tooltip,
+  CircularProgress,
+  Alert,
+  Container
 } from '@mui/material';
 import { 
   Dashboard, 
@@ -41,6 +44,13 @@ const menuItems = [
   { text: 'Loại tính cách', href: '/admin/personality-types', icon: <Psychology /> },
 ];
 
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -49,6 +59,45 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAdminAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Authentication failed');
+        }
+
+        const data = await response.json();
+        if (data.success && data.data) {
+          const userData = data.data;
+          if (userData.role !== 'admin') {
+            setError('Truy cập bị từ chối. Bạn cần có quyền quản trị viên.');
+            return;
+          }
+          setUser(userData);
+        } else {
+          throw new Error('Invalid response');
+        }
+      } catch (err) {
+        console.error('Admin auth check failed:', err);
+        setError('Không thể xác thực quyền truy cập. Vui lòng đăng nhập lại.');
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdminAuth();
+  }, [router]);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -57,6 +106,40 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const handleGoHome = () => {
     router.push('/');
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button variant="contained" onClick={() => router.push('/login')}>
+          Đăng nhập lại
+        </Button>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Alert severity="warning">
+          Bạn cần đăng nhập để truy cập trang quản trị.
+        </Alert>
+        <Button variant="contained" onClick={() => router.push('/login')} sx={{ mt: 2 }}>
+          Đăng nhập
+        </Button>
+      </Container>
+    );
+  }
 
   const currentDrawerWidth = open ? drawerWidth : collapsedDrawerWidth;
 
@@ -82,6 +165,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Bảng điều khiển quản trị
+          </Typography>
+          <Typography variant="body2" sx={{ mr: 2 }}>
+            Xin chào, {user.username}
           </Typography>
           <Tooltip title="Về trang chủ MBTI">
             <Button
