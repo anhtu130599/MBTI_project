@@ -37,6 +37,7 @@ import {
   // Login, // Not used
 } from '@mui/icons-material';
 import { PersonalityDetailInfo } from '@/core/domain/entities/MBTIDimensionInfo';
+import { getCareerGuidance } from '@/shared/data/careerGuidanceData';
 
 interface ExtendedPersonalityInfo extends PersonalityDetailInfo {
   available_careers: Array<{
@@ -537,71 +538,205 @@ function TestResultContent() {
         </CardContent>
       </Card>
 
-      {/* Career Guidance */}
+      {/* Enhanced Career Guidance */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Box display="flex" alignItems="center" mb={3}>
             <Work sx={{ mr: 2, color: 'primary.main' }} />
             <Typography variant="h5" fontWeight="bold">
-              Định hướng nghề nghiệp
+              Định hướng nghề nghiệp chi tiết
             </Typography>
           </Box>
           
-          {/* Suitable Fields */}
-          <Box mb={4}>
-            <Typography variant="h6" gutterBottom>
-              Nhóm ngành nghề phù hợp
-            </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-              {result.career_guidance.suitable_fields.map((field, index) => (
-                <Chip key={index} label={field} color="primary" />
-              ))}
-            </Stack>
-          </Box>
+          {(() => {
+            const careerDetails = getCareerGuidance(result.type);
+            
+            if (!careerDetails) {
+              // Fallback to original career guidance if detailed data not available
+              return (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Nhóm ngành nghề phù hợp
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 3 }}>
+                    {result.career_guidance.suitable_fields.map((field, index) => (
+                      <Chip key={index} label={field} color="primary" />
+                    ))}
+                  </Stack>
+                  
+                  <Typography variant="h6" gutterBottom>
+                    Kỹ năng cần cải thiện
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {result.career_guidance.improvement_skills.map((skill, index) => (
+                      <Grid item xs={12} sm={6} key={index}>
+                        <Paper elevation={1} sx={{ p: 2 }}>
+                          <Typography variant="body2">• {skill}</Typography>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              );
+            }
 
-          {/* Available Careers */}
-          <Box mb={4}>
-            <Typography variant="h6" gutterBottom>
-              Nghề nghiệp cụ thể trong cơ sở dữ liệu
-            </Typography>
-            <Grid container spacing={2}>
-              {result.available_careers.slice(0, 6).map((career, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-                    <Typography variant="h6" gutterBottom>
-                      {career.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      {career.description}
-                    </Typography>
-                    {career.salary_range && (
-                      <Typography variant="body2" color="primary">
-                        <strong>Mức lương:</strong> {career.salary_range}
+            return (
+              <Box>
+                {/* Career Overview */}
+                <Box mb={4}>
+                  <Typography variant="h6" gutterBottom color="primary.main">
+                    Tổng quan nghề nghiệp cho {careerDetails.personalityType}
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    {careerDetails.overview}
+                  </Typography>
+                </Box>
+
+                {/* Work Environment */}
+                <Box mb={4}>
+                  <Typography variant="h6" gutterBottom>
+                    Môi trường làm việc
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper elevation={2} sx={{ p: 3, backgroundColor: 'success.main', color: 'white' }}>
+                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                          ✓ Môi trường phù hợp
+                        </Typography>
+                        <Typography variant="body2">
+                          {careerDetails.workEnvironment.preferred}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Paper elevation={2} sx={{ p: 3, backgroundColor: 'error.main', color: 'white' }}>
+                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                          ✗ Nên tránh
+                        </Typography>
+                        <Typography variant="body2">
+                          {careerDetails.workEnvironment.avoid}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Ideal Roles by Category */}
+                <Box mb={4}>
+                  <Typography variant="h6" gutterBottom>
+                    Nhóm nghề nghiệp lý tưởng
+                  </Typography>
+                  <Grid container spacing={3}>
+                    {careerDetails.idealRoles.map((roleCategory, index) => (
+                      <Grid item xs={12} md={6} key={index}>
+                        <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                          <Typography variant="subtitle1" fontWeight="bold" color="primary" gutterBottom>
+                            {roleCategory.category}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" paragraph>
+                            {roleCategory.description}
+                          </Typography>
+                          <Stack direction="row" spacing={1} flexWrap="wrap">
+                            {roleCategory.roles.map((role, roleIndex) => (
+                              <Chip 
+                                key={roleIndex} 
+                                label={role} 
+                                size="small" 
+                                variant="outlined"
+                                color="primary"
+                              />
+                            ))}
+                          </Stack>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+
+                {/* Strengths & Development Areas */}
+                <Grid container spacing={3} mb={4}>
+                  <Grid item xs={12} md={6}>
+                    <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                      <Typography variant="h6" gutterBottom color="success.main">
+                        🌟 Điểm mạnh trong công việc
                       </Typography>
-                    )}
-                  </Paper>
+                      {careerDetails.keyStrengths.map((strength, index) => (
+                        <Box key={index} sx={{ mb: 1 }}>
+                          <Typography variant="body2">
+                            • {strength}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                      <Typography variant="h6" gutterBottom color="warning.main">
+                        📈 Kỹ năng cần phát triển
+                      </Typography>
+                      {careerDetails.developmentAreas.map((area, index) => (
+                        <Box key={index} sx={{ mb: 1 }}>
+                          <Typography variant="body2">
+                            • {area}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Grid>
                 </Grid>
-              ))}
-            </Grid>
-          </Box>
 
-          {/* Improvement Skills */}
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Kỹ năng cần cải thiện để làm tốt công việc
-            </Typography>
-            <Grid container spacing={2}>
-              {result.career_guidance.improvement_skills.map((skill, index) => (
-                <Grid item xs={12} sm={6} key={index}>
-                  <Paper elevation={1} sx={{ p: 2 }}>
-                    <Typography variant="body2">
-                      • {skill}
-                    </Typography>
-                  </Paper>
+                {/* Career Tips */}
+                <Box mb={4}>
+                  <Typography variant="h6" gutterBottom>
+                    💡 Lời khuyên phát triển sự nghiệp
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {careerDetails.careerTips.map((tip, index) => (
+                      <Grid item xs={12} sm={6} key={index}>
+                        <Paper elevation={1} sx={{ p: 2, height: '100%' }}>
+                          <Typography variant="body2">
+                            {index + 1}. {tip}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+
+                {/* Salary & Outlook */}
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Paper elevation={2} sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>
+                        💰 Mức lương tham khảo (VN)
+                      </Typography>
+                      <Box>
+                        <Typography variant="body2" gutterBottom>
+                          <strong>Mới vào nghề:</strong> {careerDetails.salary_ranges.entry}
+                        </Typography>
+                        <Typography variant="body2" gutterBottom>
+                          <strong>Có kinh nghiệm:</strong> {careerDetails.salary_ranges.mid}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Cấp cao:</strong> {careerDetails.salary_ranges.senior}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Paper elevation={2} sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>
+                        📊 Triển vọng ngành
+                      </Typography>
+                      <Typography variant="body2">
+                        {careerDetails.industry_outlook}
+                      </Typography>
+                    </Paper>
+                  </Grid>
                 </Grid>
-              ))}
-            </Grid>
-          </Box>
+              </Box>
+            );
+          })()}
         </CardContent>
       </Card>
 

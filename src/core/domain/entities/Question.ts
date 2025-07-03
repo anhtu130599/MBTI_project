@@ -6,5 +6,7 @@ export interface Question {
     text: string;
     value: 'E' | 'I' | 'S' | 'N' | 'T' | 'F' | 'J' | 'P';
   }[];
-  category: 'EI' | 'SN' | 'TF' | 'JP';
+  category: string; // Allow flexible category names
+  isActive?: boolean;
+  order?: number;
 } 

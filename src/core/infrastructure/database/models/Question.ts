@@ -30,7 +30,15 @@ const QuestionSchema = new Schema<QuestionDocument>({
   category: {
     type: String,
     required: true,
-    enum: ['EI', 'SN', 'TF', 'JP'],
+    trim: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  order: {
+    type: Number,
+    default: 0,
   },
 }, {
   timestamps: true,

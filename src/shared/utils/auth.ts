@@ -43,7 +43,7 @@ export async function verifyAdminAuth(request: NextRequest) {
       role: userData.role 
     };
   } catch (error) {
-    console.log('verifyAdminAuth: JWT verification failed:', error.message);
+    console.log('verifyAdminAuth: JWT verification failed:', error instanceof Error ? error.message : error);
     return { success: false, error: 'Invalid token', status: 401 };
   }
 }

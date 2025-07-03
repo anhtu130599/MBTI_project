@@ -1,51 +1,123 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
 import dbConnect from '@/lib/mongodb';
-import Question from '@/models/Question';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-async function isAdmin() {
-  const cookieStore = cookies();
-  const token = cookieStore.get('auth-token')?.value;
-  if (!token) return false;
-  try {
-    const payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    return payload.payload.role === 'admin';
-  } catch {
-    return false;
-  }
-}
+import Question from '@/core/infrastructure/database/models/Question';
+import { verifyAdminAuth } from '@/shared/utils/auth';
 
 export async function GET() {
   await dbConnect();
-  const questions = await Question.find().sort({ order: 1 });
-  return NextResponse.json(questions);
+  try {
+    const questions = await Question.find().sort({ createdAt: -1 });
+    return NextResponse.json(questions);
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+    return NextResponse.json({ error: 'Lỗi khi tải câu hỏi' }, { status: 500 });
+  }
 }
 
-export async function POST(req: NextRequest) {
-  if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  await dbConnect();
-  const data = await req.json();
-  const maxOrder = (await Question.findOne().sort({ order: -1 }))?.order || 0;
-  const question = await Question.create({ ...data, order: maxOrder + 1 });
-  return NextResponse.json(question);
+export async function POST(request: NextRequest) {
+  try {
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
+    }
+
+    await dbConnect();
+    const data = await request.json();
+    
+    // Transform options to match the schema
+    const transformedData = {
+      ...data,
+      options: data.options.map((option: any, index: number) => ({
+        id: `option_${index + 1}`,
+        text: option.text,
+        value: option.value
+      }))
+    };
+
+    // Validate required fields
+    if (!transformedData.text || !transformedData.category || !transformedData.options || transformedData.options.length < 2) {
+      return NextResponse.json({ error: 'Vui lòng nhập đầy đủ thông tin' }, { status: 400 });
+    }
+
+    // Validate options
+    for (const option of transformedData.options) {
+      if (!option.text || !option.value) {
+        return NextResponse.json({ error: 'Vui lòng nhập đầy đủ nội dung và giá trị cho tất cả đáp án' }, { status: 400 });
+      }
+    }
+
+    const question = await Question.create(transformedData);
+    return NextResponse.json(question);
+  } catch (error) {
+    console.error('Error creating question:', error);
+    return NextResponse.json({ error: 'Lỗi khi tạo câu hỏi' }, { status: 500 });
+  }
 }
 
-export async function PUT(req: NextRequest) {
-  if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  await dbConnect();
-  const data = await req.json();
-  const { _id, ...update } = data;
-  const question = await Question.findByIdAndUpdate(_id, update, { new: true });
-  return NextResponse.json(question);
+export async function PUT(request: NextRequest) {
+  try {
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
+    }
+
+    await dbConnect();
+    const data = await request.json();
+    const { _id, ...updateData } = data;
+
+    if (!_id) {
+      return NextResponse.json({ error: 'Thiếu ID câu hỏi' }, { status: 400 });
+    }
+
+    // Transform options to match the schema
+    const transformedData = {
+      ...updateData,
+      options: updateData.options.map((option: any, index: number) => ({
+        id: `option_${index + 1}`,
+        text: option.text,
+        value: option.value
+      }))
+    };
+
+    const question = await Question.findByIdAndUpdate(_id, transformedData, { new: true });
+    
+    if (!question) {
+      return NextResponse.json({ error: 'Không tìm thấy câu hỏi' }, { status: 404 });
+    }
+
+    return NextResponse.json(question);
+  } catch (error) {
+    console.error('Error updating question:', error);
+    return NextResponse.json({ error: 'Lỗi khi cập nhật câu hỏi' }, { status: 500 });
+  }
 }
 
-export async function DELETE(req: NextRequest) {
-  if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  await dbConnect();
-  const { _id } = await req.json();
-  await Question.findByIdAndDelete(_id);
-  return NextResponse.json({ success: true });
+export async function DELETE(request: NextRequest) {
+  try {
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
+    }
+
+    await dbConnect();
+    const { _id } = await request.json();
+
+    if (!_id) {
+      return NextResponse.json({ error: 'Thiếu ID câu hỏi' }, { status: 400 });
+    }
+
+    const question = await Question.findByIdAndDelete(_id);
+    
+    if (!question) {
+      return NextResponse.json({ error: 'Không tìm thấy câu hỏi' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    return NextResponse.json({ error: 'Lỗi khi xóa câu hỏi' }, { status: 500 });
+  }
 } 
