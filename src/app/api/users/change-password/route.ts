@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import User from '@/core/infrastructure/database/models/User';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import bcryptjs from 'bcryptjs';
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const userId = payload.payload.id;
+    const userId = payload.payload.userId;
     const { currentPassword, newPassword } = await request.json();
 
     await dbConnect();
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Gửi email thông báo đổi mật khẩu thành công
     try {
-      const emailSent = await sendPasswordChangeNotificationEmail(user.email, user.name);
+      const emailSent = await sendPasswordChangeNotificationEmail(user.email, user.username);
       if (!emailSent) {
         console.warn(`Failed to send password change notification to ${user.email}`);
         // Không return error vì việc đổi mật khẩu đã thành công

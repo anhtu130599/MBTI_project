@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const userId = await getAuthenticatedUser(request);
     
     await dbConnect();
-    const User = (await import('@/models/User')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
     
     const user = await User.findById(userId).select('-password -verificationToken -verificationTokenExpires');
     
@@ -39,6 +39,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       _id: user._id,
       username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role,
       emailVerified: user.emailVerified,
@@ -62,7 +64,8 @@ export async function GET(request: NextRequest) {
 }
 
 interface UpdateData {
-  username?: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string;
 }
 
@@ -70,33 +73,52 @@ export async function PUT(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUser(request);
     
-    const formData = await request.formData();
-    const name = formData.get('name') as string;
-    const avatarFile = formData.get('avatar') as File | null;
-
     await dbConnect();
-    const User = (await import('@/models/User')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
     
     const updateData: UpdateData = {};
-    if (name) updateData.username = name; // Update username instead of name
+    
+    // Check content type to handle both JSON and FormData
+    const contentType = request.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      // Handle JSON data
+      const jsonData = await request.json();
+      if (jsonData.firstName) updateData.firstName = jsonData.firstName;
+      if (jsonData.lastName) updateData.lastName = jsonData.lastName;
+    } else if (contentType.includes('multipart/form-data')) {
+      // Handle FormData
+      const formData = await request.formData();
+      const firstName = formData.get('firstName') as string;
+      const lastName = formData.get('lastName') as string;
+      const avatarFile = formData.get('avatar') as File | null;
+      
+      if (firstName) updateData.firstName = firstName;
+      if (lastName) updateData.lastName = lastName;
 
-    if (avatarFile) {
-      try {
-        const bytes = await avatarFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const fileName = `${userId}-${Date.now()}.${avatarFile.name.split('.').pop()}`;
-        
-        // Ensure avatars directory exists
-        const avatarsDir = join(process.cwd(), 'public', 'avatars');
-        await mkdir(avatarsDir, { recursive: true });
-        
-        const path = join(avatarsDir, fileName);
-        await writeFile(path, buffer);
-        updateData.avatar = `/avatars/${fileName}`;
-      } catch (fileError) {
-        console.error('File upload error:', fileError);
-        // Continue without avatar update if file upload fails
+      if (avatarFile) {
+        try {
+          const bytes = await avatarFile.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          const fileName = `${userId}-${Date.now()}.${avatarFile.name.split('.').pop()}`;
+          
+          // Ensure avatars directory exists
+          const avatarsDir = join(process.cwd(), 'public', 'avatars');
+          await mkdir(avatarsDir, { recursive: true });
+          
+          const path = join(avatarsDir, fileName);
+          await writeFile(path, buffer);
+          updateData.avatar = `/avatars/${fileName}`;
+        } catch (fileError) {
+          console.error('File upload error:', fileError);
+          // Continue without avatar update if file upload fails
+        }
       }
+    } else {
+      return NextResponse.json(
+        { message: 'Content-Type must be application/json or multipart/form-data' },
+        { status: 400 }
+      );
     }
 
     const user = await User.findByIdAndUpdate(
@@ -117,6 +139,8 @@ export async function PUT(request: NextRequest) {
       user: {
         _id: user._id,
         username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
         avatar: user.avatar,

@@ -18,7 +18,7 @@ export async function GET() {
     } catch {
       return NextResponse.json({ error: 'Token không hợp lệ.' }, { status: 401 });
     }
-    const userId = payload.payload.id;
+    const userId = payload.payload.userId;
     await dbConnect();
     const result = await TestResult.findOne({ userId }).sort({ createdAt: -1 });
     if (!result) {

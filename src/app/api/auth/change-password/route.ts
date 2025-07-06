@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import User from '@/core/infrastructure/database/models/User';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { sendPasswordChangeNotificationEmail } from '@/core/infrastructure/external/nodemailer';
@@ -32,22 +32,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token không hợp lệ hoặc đã hết hạn' }, { status: 401 });
     }
     await dbConnect();
-    const user = await User.findById(payload.payload.id);
+    const user = await User.findById(payload.payload.userId);
     if (!user) {
       return NextResponse.json({ error: 'Không tìm thấy người dùng' }, { status: 404 });
     }
     // Kiểm tra mật khẩu cũ
-    const isMatch = await user.comparePassword(oldPassword);
+    const bcrypt = require('bcryptjs');
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return NextResponse.json({ error: 'Mật khẩu cũ không đúng' }, { status: 400 });
     }
     // Đổi mật khẩu
-    user.password = newPassword;
-    await user.save();
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+    await User.findByIdAndUpdate(user._id, { password: hashedNewPassword });
     
     // Gửi email thông báo đổi mật khẩu thành công
     try {
-      const emailSent = await sendPasswordChangeNotificationEmail(user.email, user.name);
+      const emailSent = await sendPasswordChangeNotificationEmail(user.email, user.username);
       if (!emailSent) {
         console.warn(`Failed to send password change notification to ${user.email}`);
         // Không return error vì việc đổi mật khẩu đã thành công

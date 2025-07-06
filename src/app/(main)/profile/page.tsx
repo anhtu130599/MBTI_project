@@ -9,6 +9,8 @@ import { ROUTES } from '@/shared/constants';
 interface User {
   _id: string;
   username: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: string;
   emailVerified?: boolean;
@@ -106,7 +108,12 @@ export default function UserProfilePage() {
                 <Alert severity="error">{error}</Alert>
               ) : user ? (
                 <Box>
-                  <Typography variant="body1"><strong>Tên người dùng:</strong> {user.username}</Typography>
+                  {(user.firstName || user.lastName) && (
+                    <Typography variant="body1">
+                      <strong>Họ tên:</strong> {`${user.lastName || ''} ${user.firstName || ''}`.trim()}
+                    </Typography>
+                  )}
+                  <Typography variant="body1" sx={{ mt: 1 }}><strong>Tên người dùng:</strong> {user.username}</Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}><strong>Email:</strong> {user.email}</Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}><strong>Vai trò:</strong> {user.role}</Typography>
                   {user.emailVerified !== undefined && (

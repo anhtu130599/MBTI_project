@@ -15,7 +15,8 @@ import {
 import { userService } from '@/features/user/services/userService';
 
 export default function ProfileSettingsPage() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,8 @@ export default function ProfileSettingsPage() {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
         const userData = await response.json();
-        setName(userData.data?.name || '');
+        setFirstName(userData.data?.firstName || '');
+        setLastName(userData.data?.lastName || '');
         setEmail(userData.data?.email || '');
       }
     } catch (error) {
@@ -45,7 +47,7 @@ export default function ProfileSettingsPage() {
     setSuccess(null);
 
     try {
-      await userService.updateProfile({ name });
+      await userService.updateProfile({ firstName, lastName });
       setSuccess('Hồ sơ đã được cập nhật thành công!');
       // Refetch user data to update the UI
       await fetchUser();
@@ -68,10 +70,19 @@ export default function ProfileSettingsPage() {
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <TextField
             fullWidth
-            label="Họ và tên"
+            label="Tên"
             variant="outlined"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            margin="normal"
+            required
+          />
+          <TextField
+            fullWidth
+            label="Họ"
+            variant="outlined"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             margin="normal"
             required
           />

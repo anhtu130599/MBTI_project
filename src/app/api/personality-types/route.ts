@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import PersonalityDetailInfo from '@/models/PersonalityDetailInfo';
+import PersonalityDetailInfo from '@/core/infrastructure/database/models/PersonalityDetailInfo';
 
 export async function GET() {
   try {

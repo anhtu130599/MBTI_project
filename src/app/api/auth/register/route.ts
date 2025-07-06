@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     await dbConnect();
-    const User = (await import('@/models/User')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
 
     // Kiểm tra username đã tồn tại
     const existingUsername = await User.findOne({ username });

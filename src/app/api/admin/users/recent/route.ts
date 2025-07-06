@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const User = (await import('@/models/User')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
 
     const recentUsers = await User
       .find()

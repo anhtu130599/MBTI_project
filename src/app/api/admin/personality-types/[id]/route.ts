@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { verifyAdminAuth } from '@/shared/utils/auth';
-import PersonalityDetailInfo from '@/models/PersonalityDetailInfo';
+import PersonalityDetailInfo from '@/core/infrastructure/database/models/PersonalityDetailInfo';
 
 export async function GET(
   request: NextRequest,

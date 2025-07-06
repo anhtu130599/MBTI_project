@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import User from '@/core/infrastructure/database/models/User';
 import jwt from 'jsonwebtoken';
 
 interface VerifyPayload extends jwt.JwtPayload {

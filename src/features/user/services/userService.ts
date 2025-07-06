@@ -29,7 +29,7 @@ export const userService = {
     return request('/users/profile');
   },
 
-  updateProfile: async (data: { name: string }) => {
+  updateProfile: async (data: { firstName: string; lastName: string }) => {
     return request('/users/profile', {
       method: 'PUT',
       body: JSON.stringify(data),

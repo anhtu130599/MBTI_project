@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Question from '@/models/Question';
+import Question from '@/core/infrastructure/database/models/Question';
 import { verifyAdminAuth } from '@/shared/utils/auth';
 
 interface OptionInput {

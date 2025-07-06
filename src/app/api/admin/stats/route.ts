@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const User = (await import('@/models/User')).default;
-    const Question = (await import('@/models/Question')).default;
-    const PersonalityDetailInfo = (await import('@/models/PersonalityDetailInfo')).default;
-    const Career = (await import('@/models/Career')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
+    const Question = (await import('@/core/infrastructure/database/models/Question')).default;
+    const PersonalityDetailInfo = (await import('@/core/infrastructure/database/models/PersonalityDetailInfo')).default;
+    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
 
     // Get current date for recent stats
     const thirtyDaysAgo = new Date();

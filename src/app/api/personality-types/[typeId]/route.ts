@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/mongodb';
-import PersonalityDetailInfo from '@/models/PersonalityDetailInfo';
+import PersonalityDetailInfo from '@/core/infrastructure/database/models/PersonalityDetailInfo';
 import { ApiResponseUtil } from '@/shared/utils/apiResponse';
 
 export async function GET(

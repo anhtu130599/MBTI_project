@@ -455,7 +455,7 @@ export const userCacheStrategy = CacheStrategyFactory.createWriteThrough(
     const userId = key.replace('user:', '');
     // Update user in database
     const dbConnect = (await import('@/lib/mongodb')).default;
-    const User = (await import('@/models/User')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
     
     await dbConnect();
     if (value === null) {

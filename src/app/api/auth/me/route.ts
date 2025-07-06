@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
     
     await dbConnect();
-    const User = (await import('@/models/User')).default;
+    const User = (await import('@/core/infrastructure/database/models/User')).default;
     const user = await User.findById(payload.payload.userId).select('-password');
     
     if (!user) {
@@ -32,6 +32,8 @@ export async function GET(request: NextRequest) {
       data: {
         _id: user._id,
         username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
         emailVerified: user.emailVerified || false,
