@@ -334,22 +334,13 @@ export default function AdminQuestionsPage() {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Quản lý câu hỏi MBTI
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Quản lý câu hỏi theo 4 xu hướng tính cách đối lập của MBTI
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen(null)}
-        >
-          Thêm câu hỏi mới
-        </Button>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Quản lý câu hỏi MBTI
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Quản lý câu hỏi theo 4 xu hướng tính cách đối lập của MBTI
+        </Typography>
       </Box>
 
       <Paper sx={{ width: '100%' }}>
@@ -358,15 +349,21 @@ export default function AdminQuestionsPage() {
             value={selectedTab} 
             onChange={handleTabChange} 
             aria-label="MBTI dimensions tabs"
-            variant="scrollable"
-            scrollButtons="auto"
+            variant="fullWidth"
+            sx={{ 
+              '& .MuiTab-root': { 
+                minWidth: 0,
+                flex: 1,
+                maxWidth: 'none'
+              }
+            }}
           >
             {DIMENSION_TABS.map((dimension, index) => (
               <Tab 
                 key={dimension.id}
                 label={
-                  <Box sx={{ textAlign: 'left' }}>
-                    <Typography variant="body2" fontWeight="bold">
+                  <Box sx={{ textAlign: 'center', py: 1 }}>
+                    <Typography variant="body2" fontWeight="bold" sx={{ fontSize: '0.875rem' }}>
                       {dimension.label}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -377,19 +374,6 @@ export default function AdminQuestionsPage() {
                 {...a11yProps(index)}
               />
             ))}
-            <Tab 
-              label={
-                <Box sx={{ textAlign: 'left' }}>
-                  <Typography variant="body2" fontWeight="bold">
-                    Câu hỏi khác
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {getQuestionsByDimension('other').length} câu hỏi
-                  </Typography>
-                </Box>
-              }
-              {...a11yProps(4)}
-            />
           </Tabs>
         </Box>
 
@@ -419,31 +403,6 @@ export default function AdminQuestionsPage() {
             {renderQuestionList(getQuestionsByDimension(dimension.id))}
           </TabPanel>
         ))}
-
-        <TabPanel value={selectedTab} index={4}>
-          <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Câu hỏi khác
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Các câu hỏi chưa được phân loại hoặc không thuộc 4 xu hướng chính
-                </Typography>
-              </Box>
-              <Button
-                variant="outlined"
-                startIcon={<AddIcon />}
-                onClick={() => handleOpen(null, 'other')}
-                size="small"
-              >
-                Thêm câu hỏi khác
-              </Button>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-          </Box>
-          {renderQuestionList(getQuestionsByDimension('other'))}
-        </TabPanel>
       </Paper>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
