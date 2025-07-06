@@ -16,16 +16,36 @@ import { useRouter } from 'next/navigation';
 interface PersonalityType {
   _id: string;
   type: string;
-  title: string;
+  name: string;
   description: string;
-  strengths: string[];
-  weaknesses: string[];
-  careers: string[];
+  strengths: Array<{
+    title: string;
+    description: string;
+    why_explanation: string;
+  }>;
+  weaknesses: Array<{
+    title: string;
+    description: string;
+    why_explanation: string;
+    improvement_advice: string;
+  }>;
+}
+
+interface Career {
+  id: string;
+  title: string;
+}
+
+interface CareerResponse {
+  data?: {
+    careers?: Array<{ _id?: string; id?: string; title: string }>;
+  };
 }
 
 const PersonalityTypesPage = () => {
   const router = useRouter();
   const [types, setTypes] = useState<PersonalityType[]>([]);
+  const [careersMap, setCareersMap] = useState<Record<string, Career[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +56,28 @@ const PersonalityTypesPage = () => {
         if (!res.ok) throw new Error("Không thể tải dữ liệu loại tính cách");
         const data = await res.json();
         setTypes(data);
+        // Fetch careers for all types in parallel
+        const careersResults = await Promise.all(
+          data.map(async (type: PersonalityType) => {
+            try {
+              const res = await fetch(`/api/careers/personality/${type.type}`);
+              if (!res.ok) return { type: type.type, careers: [] };
+              const careerData: CareerResponse = await res.json();
+              return {
+                type: type.type,
+                careers: (careerData.data?.careers || []).map((c) => ({ 
+                  id: c._id || c.id || '', 
+                  title: c.title 
+                }))
+              };
+            } catch {
+              return { type: type.type, careers: [] };
+            }
+          })
+        );
+        const map: Record<string, Career[]> = {};
+        careersResults.forEach(r => { map[r.type] = r.careers; });
+        setCareersMap(map);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message || "Lỗi không xác định");
@@ -98,25 +140,33 @@ const PersonalityTypesPage = () => {
             >
               <CardContent>
                 <Typography variant="h5" component="h2" gutterBottom>
-                  {type.type} - {type.title}
+                  {type.type} - {type.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  {type.description}
+                  {type.description.length > 200 ? `${type.description.substring(0, 200)}...` : type.description}
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Đặc điểm nổi bật:
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {type.strengths.map((strength, index) => (
+                    {type.strengths.slice(0, 3).map((strength, strengthIndex) => (
                       <Chip
-                        key={index}
-                        label={strength}
+                        key={strengthIndex}
+                        label={strength.title}
                         size="small"
                         color="primary"
                         variant="outlined"
                       />
                     ))}
+                    {type.strengths.length > 3 && (
+                      <Chip
+                        label={`+${type.strengths.length - 3} more`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    )}
                   </Box>
                 </Box>
                 <Box sx={{ mt: 2 }}>
@@ -124,18 +174,18 @@ const PersonalityTypesPage = () => {
                     Nghề nghiệp phù hợp:
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {type.careers.slice(0, 3).map((career, index) => (
+                    {(careersMap[type.type] || []).slice(0, 3).map((career, careerIndex) => (
                       <Chip
-                        key={index}
-                        label={career}
+                        key={career.id || careerIndex}
+                        label={career.title}
                         size="small"
                         color="secondary"
                         variant="outlined"
                       />
                     ))}
-                    {type.careers.length > 3 && (
+                    {(careersMap[type.type]?.length || 0) > 3 && (
                       <Chip
-                        label={`+${type.careers.length - 3} more`}
+                        label={`+${careersMap[type.type].length - 3} more`}
                         size="small"
                         color="secondary"
                         variant="outlined"

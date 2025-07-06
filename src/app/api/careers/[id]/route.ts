@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Career from '@/core/infrastructure/database/models/Career';
+import Career from '@/models/Career';
 
 export async function GET(
   request: Request,

@@ -16,7 +16,7 @@ export async function GET(
     }
 
     await dbConnect();
-    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
+    const Career = (await import('@/models/Career')).default;
     const career = await Career.findById(params.id);
     
     if (!career) {
@@ -46,7 +46,7 @@ export async function PUT(
     const data = await request.json();
     await dbConnect();
 
-    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
+    const Career = (await import('@/models/Career')).default;
     const career = await Career.findByIdAndUpdate(
       params.id,
       { ...data, updatedAt: new Date() },
@@ -78,7 +78,7 @@ export async function DELETE(
     }
 
     await dbConnect();
-    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
+    const Career = (await import('@/models/Career')).default;
     const career = await Career.findByIdAndDelete(params.id);
 
     if (!career) {

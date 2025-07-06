@@ -13,6 +13,24 @@ export interface QuestionStats {
   estimatedTime: number;
 }
 
+export interface CareerRecommendation {
+  id: string;
+  title: string;
+  description: string;
+  industry: string;
+  salaryRange: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  requiredSkills: string[];
+  educationLevel: string;
+  experienceLevel: string;
+  workEnvironment: string;
+  location: string;
+  jobOutlook: string;
+}
+
 export interface TestSubmissionResponse {
   id?: string;
   type: string;
@@ -43,11 +61,7 @@ export interface TestSubmissionResponse {
   };
   total_questions?: number;
   timestamp: Date | string;
-  careers?: {
-    title: string;
-    description: string;
-    matchScore: number;
-  }[];
+  careers?: CareerRecommendation[];
 }
 
 // 🎯 INTERFACE CHO LAST TEST RESULT
@@ -168,4 +182,18 @@ export const testService = {
   clearLastTestResult(): void {
     localStorage.removeItem('last_test_result');
   },
+};
+
+export const getCareersByPersonalityType = async (personalityType: string): Promise<CareerRecommendation[]> => {
+  try {
+    const response = await fetch(`/api/careers/personality/${personalityType}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch careers');
+    }
+    const data = await response.json();
+    return data.data.careers || [];
+  } catch (error) {
+    console.error('Error fetching careers by personality type:', error);
+    return [];
+  }
 }; 

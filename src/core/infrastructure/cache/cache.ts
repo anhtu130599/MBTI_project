@@ -461,22 +461,5 @@ export const memoryCache = MemoryCache.getInstance();
 export const cacheHelper = new CacheHelper();
 export const backgroundRefresher = new BackgroundRefresher();
 
-// Setup cache warming for common data
-/*
-// export async function warmCommonCaches(): Promise<void> {
-  try {
-    await cacheHelper.warmCache([
-      {
-        key: CacheKeys.personalityTypes(),
-        fetcher: async () => {
-          const { default: PersonalityType } = await import('@/core/domain/entities/PersonalityType');
-          return PersonalityType.find({}).lean();
-        },
-        ttl: CacheTTL.VERY_LONG,
-      },
-    ]);
-  } catch (error) {
-    console.error('Failed to warm common caches:', error);
-  }
-}
-*/ 
+// Cache warming is disabled as we now use PersonalityDetailInfo
+// and cache warming should be implemented per specific use case 

@@ -200,6 +200,19 @@ export default function AdminQuestionsPage() {
       return;
     }
     
+    // Check for duplicate question in current list (client-side validation)
+    if (editIdx === null) { // Only check for new questions
+      const normalizedText = form.text.trim().toLowerCase();
+      const isDuplicate = questions.some(q => 
+        q.text.trim().toLowerCase() === normalizedText
+      );
+      
+      if (isDuplicate) {
+        setError('Câu hỏi này đã tồn tại trong danh sách. Vui lòng kiểm tra lại!');
+        return;
+      }
+    }
+    
     setError(null); // Clear previous errors
     
     const method = editIdx === null ? 'POST' : 'PUT';
@@ -471,7 +484,7 @@ export default function AdminQuestionsPage() {
               helperText={
                 currentDimensionId && currentDimensionId !== 'other'
                   ? editIdx === null 
-                    ? `Tự động set thành "${currentDimensionId}" cho xu hướng này`
+                  ? `Tự động set thành "${currentDimensionId}" cho xu hướng này`
                     : `Câu hỏi thuộc nhóm ${currentDimensionId} - không thể thay đổi`
                   : "Ví dụ: EI, SN, TF, JP hoặc tên nhóm tự định nghĩa"
               }

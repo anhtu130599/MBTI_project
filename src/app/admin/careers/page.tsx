@@ -22,6 +22,7 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  MenuItem,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,10 +34,18 @@ interface Career {
   title: string;
   description: string;
   personalityTypes: string[];
-  skills: string[];
-  education: string;
-  salary: string;
+  requiredSkills: string[];
+  industry: string;
+  salaryRange: { min: number; max: number; currency: string };
+  educationLevel: string;
+  experienceLevel: string;
+  workEnvironment: string;
+  location: string;
+  jobOutlook: string;
 }
+
+const experienceLevels = ['Entry', 'Mid', 'Senior', 'Executive'];
+const currencyOptions = ['VND', 'USD', 'EUR'];
 
 export default function AdminCareersPage() {
   const router = useRouter();
@@ -49,9 +58,16 @@ export default function AdminCareersPage() {
     title: '',
     description: '',
     personalityTypes: '',
-    skills: '',
-    education: '',
-    salary: '',
+    requiredSkills: '',
+    industry: '',
+    salaryMin: '',
+    salaryMax: '',
+    salaryCurrency: 'VND',
+    educationLevel: '',
+    experienceLevel: '',
+    workEnvironment: '',
+    location: '',
+    jobOutlook: '',
   });
   const [mbtiTypes, setMbtiTypes] = useState<string[]>([]);
 
@@ -97,9 +113,16 @@ export default function AdminCareersPage() {
       title: '',
       description: '',
       personalityTypes: '',
-      skills: '',
-      education: '',
-      salary: '',
+      requiredSkills: '',
+      industry: '',
+      salaryMin: '',
+      salaryMax: '',
+      salaryCurrency: 'VND',
+      educationLevel: '',
+      experienceLevel: '',
+      workEnvironment: '',
+      location: '',
+      jobOutlook: '',
     });
     setDialogOpen(true);
   };
@@ -110,9 +133,16 @@ export default function AdminCareersPage() {
       title: career.title,
       description: career.description,
       personalityTypes: career.personalityTypes.join('\n'),
-      skills: career.skills.join('\n'),
-      education: career.education || '',
-      salary: career.salary || '',
+      requiredSkills: career.requiredSkills.join('\n'),
+      industry: career.industry,
+      salaryMin: career.salaryRange.min.toString(),
+      salaryMax: career.salaryRange.max.toString(),
+      salaryCurrency: career.salaryRange.currency,
+      educationLevel: career.educationLevel,
+      experienceLevel: career.experienceLevel,
+      workEnvironment: career.workEnvironment,
+      location: career.location,
+      jobOutlook: career.jobOutlook,
     });
     setDialogOpen(true);
   };
@@ -137,9 +167,21 @@ export default function AdminCareersPage() {
   const handleSubmit = async () => {
     try {
       const data = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
         personalityTypes: formData.personalityTypes.split('\n').filter(s => s.trim()),
-        skills: formData.skills.split('\n').filter(s => s.trim()),
+        requiredSkills: formData.requiredSkills.split('\n').filter(s => s.trim()),
+        industry: formData.industry,
+        salaryRange: {
+          min: Number(formData.salaryMin),
+          max: Number(formData.salaryMax),
+          currency: formData.salaryCurrency,
+        },
+        educationLevel: formData.educationLevel,
+        experienceLevel: formData.experienceLevel,
+        workEnvironment: formData.workEnvironment,
+        location: formData.location,
+        jobOutlook: formData.jobOutlook,
       };
 
       const response = await fetch(
@@ -275,29 +317,20 @@ export default function AdminCareersPage() {
               />
             )}
           />
-          <TextField
-            margin="dense"
-            label="Kỹ năng cần thiết (mỗi dòng một kỹ năng)"
-            fullWidth
-            multiline
-            rows={3}
-            value={formData.skills}
-            onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Yêu cầu học vấn"
-            fullWidth
-            value={formData.education}
-            onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Mức lương"
-            fullWidth
-            value={formData.salary}
-            onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-          />
+          <TextField label="Ngành nghề" value={formData.industry} onChange={e => setFormData({ ...formData, industry: e.target.value })} fullWidth margin="normal" required />
+          <TextField label="Kỹ năng cần thiết (mỗi dòng 1 kỹ năng)" value={formData.requiredSkills} onChange={e => setFormData({ ...formData, requiredSkills: e.target.value })} fullWidth margin="normal" multiline minRows={2} required />
+          <TextField label="Trình độ học vấn" value={formData.educationLevel} onChange={e => setFormData({ ...formData, educationLevel: e.target.value })} fullWidth margin="normal" required />
+          <TextField label="Cấp bậc kinh nghiệm" value={formData.experienceLevel} onChange={e => setFormData({ ...formData, experienceLevel: e.target.value })} fullWidth margin="normal" select required >
+            {experienceLevels.map(level => <MenuItem key={level} value={level}>{level}</MenuItem>)}
+          </TextField>
+          <TextField label="Mức lương tối thiểu" value={formData.salaryMin} onChange={e => setFormData({ ...formData, salaryMin: e.target.value })} fullWidth margin="normal" type="number" required />
+          <TextField label="Mức lương tối đa" value={formData.salaryMax} onChange={e => setFormData({ ...formData, salaryMax: e.target.value })} fullWidth margin="normal" type="number" required />
+          <TextField label="Đơn vị tiền tệ" value={formData.salaryCurrency} onChange={e => setFormData({ ...formData, salaryCurrency: e.target.value })} fullWidth margin="normal" select required >
+            {currencyOptions.map(cur => <MenuItem key={cur} value={cur}>{cur}</MenuItem>)}
+          </TextField>
+          <TextField label="Môi trường làm việc" value={formData.workEnvironment} onChange={e => setFormData({ ...formData, workEnvironment: e.target.value })} fullWidth margin="normal" required />
+          <TextField label="Địa điểm" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} fullWidth margin="normal" required />
+          <TextField label="Triển vọng nghề nghiệp" value={formData.jobOutlook} onChange={e => setFormData({ ...formData, jobOutlook: e.target.value })} fullWidth margin="normal" required />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Hủy</Button>

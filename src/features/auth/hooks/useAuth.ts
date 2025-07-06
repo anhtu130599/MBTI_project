@@ -46,6 +46,20 @@ export function useAuth() {
         // Check if there's a return URL in sessionStorage or go to home
         const returnUrl = sessionStorage.getItem('returnUrl') || '/';
         sessionStorage.removeItem('returnUrl'); // Clean up
+        
+        console.log('🔗 Redirecting after login to:', returnUrl);
+        
+        // Nếu returnUrl là trang kết quả test và user là guest, đánh dấu để auto-save
+        if (returnUrl.includes('/test/result')) {
+          const wasGuestUser = sessionStorage.getItem('wasGuestUser');
+          if (wasGuestUser === 'true') {
+            sessionStorage.setItem('wasLoggedOut', 'true');
+            console.log('🎯 Marked for auto-save on test result page (guest user)');
+          } else {
+            console.log('🎯 Logged user returned to test result page (no auto-save)');
+          }
+        }
+        
         router.push(returnUrl);
       }
       

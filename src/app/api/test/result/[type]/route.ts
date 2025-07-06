@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-
-const MONGODB_URI = 'mongodb://localhost:27017/mbti_db';
-
-// Simple inline schema matching the database exactly
-const PersonalitySchema = new mongoose.Schema({}, { 
-  strict: false, 
-  collection: 'personalitydetailinfos' 
-});
+import dbConnect from '@/lib/mongodb';
+import PersonalityDetailInfo from '@/models/PersonalityDetailInfo';
+import Career from '@/models/Career';
 
 export async function GET(
   request: NextRequest,
@@ -26,22 +20,11 @@ export async function GET(
     }
 
     // Connect to database
-    if (mongoose.connection.readyState !== 1) {
-      console.log('[API] Connecting to MongoDB...');
-      await mongoose.connect(MONGODB_URI);
-    }
+    await dbConnect();
     console.log('[API] Connected to MongoDB');
 
-    // Get model
-    const PersonalityModel = mongoose.models.TestPersonality || 
-      mongoose.model('TestPersonality', PersonalitySchema);
-
-    // Check database
-    const totalCount = await PersonalityModel.countDocuments();
-    console.log(`[API] Total documents: ${totalCount}`);
-
     // Find the personality type
-    const personality = await PersonalityModel.findOne({ type }).lean();
+    const personality = await PersonalityDetailInfo.findOne({ type }).lean();
     console.log(`[API] Found ${type}:`, personality ? 'YES' : 'NO');
 
     if (!personality) {
@@ -52,24 +35,27 @@ export async function GET(
       );
     }
 
-    console.log(`[API] Successfully found ${type} data`);
+    // Get careers for this personality type
+    const careers = await Career.find({
+      personalityTypes: { $in: [type] }
+    }).sort({ title: 1 });
 
-    // Return the data in expected format
+    console.log(`[API] Found ${careers.length} careers for ${type}`);
+
+    // Return the complete data
     return NextResponse.json({
       success: true,
       data: {
-        ...personality,
-        available_careers: [] // Empty for now
+        personality,
+        careers,
+        totalCareers: careers.length
       }
     });
 
   } catch (error) {
     console.error('[API] Error:', error);
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

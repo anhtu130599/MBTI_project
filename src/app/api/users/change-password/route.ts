@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/core/infrastructure/database/models/User';
+import User from '@/models/User';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import bcryptjs from 'bcryptjs';
+import { sendPasswordChangeNotificationEmail } from '@/core/infrastructure/external/nodemailer';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -46,7 +47,23 @@ export async function POST(request: NextRequest) {
     // Update password
     await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
 
-    return NextResponse.json({ message: 'Password updated successfully' });
+    // Gửi email thông báo đổi mật khẩu thành công
+    try {
+      const emailSent = await sendPasswordChangeNotificationEmail(user.email, user.name);
+      if (!emailSent) {
+        console.warn(`Failed to send password change notification to ${user.email}`);
+        // Không return error vì việc đổi mật khẩu đã thành công
+        // Chỉ log warning để admin biết
+      }
+    } catch (emailError) {
+      console.error('Error sending password change notification:', emailError);
+      // Tương tự, không làm fail request vì đổi mật khẩu đã thành công
+    }
+
+    return NextResponse.json({ 
+      message: 'Password updated successfully',
+      emailNotificationSent: true // Thông báo cho frontend biết email đã được gửi
+    });
   } catch (error) {
     console.error('Error changing password:', error);
     return NextResponse.json(

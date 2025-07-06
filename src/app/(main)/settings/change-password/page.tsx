@@ -30,8 +30,17 @@ export default function ChangePasswordPage() {
     setIsLoading(true);
 
     try {
-      await userService.changePassword({ currentPassword, newPassword });
-      setSuccess('Đổi mật khẩu thành công!');
+      const response = await userService.changePassword({ currentPassword, newPassword });
+      
+      // Kiểm tra xem có thông báo về email không
+      const emailNotified = response?.emailNotificationSent;
+      
+      setSuccess(
+        emailNotified 
+          ? 'Đổi mật khẩu thành công! 📧 Chúng tôi đã gửi email thông báo đến địa chỉ email của bạn.' 
+          : 'Đổi mật khẩu thành công!'
+      );
+      
       // Clear fields
       setCurrentPassword('');
       setNewPassword('');
@@ -85,7 +94,16 @@ export default function ChangePasswordPage() {
             error={!!error && newPassword !== confirmPassword}
           />
           {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+          {success && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              {success}
+              {success.includes('📧') && (
+                <Box sx={{ mt: 1, fontSize: '0.875rem', opacity: 0.8 }}>
+                  💡 Vui lòng kiểm tra hộp thư (và thư mục spam) để xem email thông báo bảo mật.
+                </Box>
+              )}
+            </Alert>
+          )}
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               type="submit"

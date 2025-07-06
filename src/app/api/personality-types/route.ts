@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import PersonalityType from '@/models/PersonalityType';
+import PersonalityDetailInfo from '@/models/PersonalityDetailInfo';
 
 export async function GET() {
   try {
     await dbConnect();
-    const types = await PersonalityType.find().sort({ type: 1 });
+    const types = await PersonalityDetailInfo.find().sort({ type: 1 });
     return NextResponse.json(types);
   } catch (error) {
     console.error('Error in GET /api/personality-types:', error);

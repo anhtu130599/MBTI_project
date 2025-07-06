@@ -26,8 +26,8 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
     personalityType: "INTJ",
     overview: "INTJ là những chiến lược gia thiên bẩm, thích làm việc độc lập và tập trung vào các dự án dài hạn. Họ xuất sắc trong việc phân tích hệ thống và tạo ra các giải pháp sáng tạo.",
     workEnvironment: {
-      preferred: "Môi trường yên tĩnh, độc lập, ít gián đoạn. Có quyền tự chủ cao và được làm việc với các vấn đề phức tạp.",
-      avoid: "Môi trường ồn ào, quá nhiều cuộc họp, vi quản lý hoặc công việc lặp đi lặp lại."
+      preferred: "Nơi làm việc thân thiện, nhiều người hỗ trợ",
+      avoid: "Nơi quá áp lực, ít tương tác"
     },
     idealRoles: [
       {
@@ -51,30 +51,15 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Phân tích và cải tiến quy trình kinh doanh, đưa ra các giải pháp chiến lược."
       }
     ],
-    keyStrengths: [
-      "Tư duy chiến lược và nhìn xa trông rộng",
-      "Khả năng phân tích và giải quyết vấn đề phức tạp",
-      "Làm việc độc lập hiệu quả",
-      "Có tầm nhìn dài hạn và khả năng lập kế hoạch"
-    ],
-    developmentAreas: [
-      "Kỹ năng giao tiếp và thuyết trình",
-      "Làm việc nhóm và lãnh đạo team",
-      "Quản lý thời gian và deadline",
-      "Kỹ năng networking và xây dựng mối quan hệ"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí cho phép làm việc độc lập và sáng tạo",
-      "Phát triển kỹ năng giao tiếp để thuyết phục được ý tưởng của mình",
-      "Tham gia các dự án có tầm ảnh hưởng lớn và dài hạn",
-      "Liên tục học hỏi và cập nhật kiến thức chuyên môn"
-    ],
+    keyStrengths: ["Luôn suy nghĩ tích cực, biết động viên người khác", "Giỏi giao tiếp, dễ kết bạn", "Làm việc một mình rất tốt", "Có khả năng nhìn xa, chuẩn bị kỹ lưỡng cho tương lai"],
+    developmentAreas: ["Cần nói chuyện, trình bày ý tưởng rõ ràng hơn", "Nên rèn luyện kỹ năng làm việc nhóm, lãnh đạo", "Chú ý quản lý thời gian, tránh trễ hạn", "Nên mở rộng mối quan hệ, kết bạn nhiều hơn"],
+    careerTips: ["Chọn công việc cho phép tự do sáng tạo, làm việc độc lập", "Tập luyện giao tiếp để ý tưởng được mọi người ủng hộ", "Tham gia các dự án lớn để phát triển bản thân", "Luôn học hỏi, cập nhật kiến thức mới"],
     salary_ranges: {
       entry: "15-25 triệu VNĐ/tháng",
       mid: "25-45 triệu VNĐ/tháng", 
       senior: "45-80+ triệu VNĐ/tháng"
     },
-    industry_outlook: "Rất tích cực, đặc biệt trong các lĩnh vực công nghệ, tài chính và tư vấn chiến lược."
+    industry_outlook: "Ngành này đang phát triển, nhiều cơ hội việc làm cho người năng động, sáng tạo."
   },
 
   INTP: {
@@ -106,24 +91,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Phân tích và cải thiện các hệ thống, quy trình phức tạp."
       }
     ],
-    keyStrengths: [
-      "Tư duy logic và phân tích xuất sắc",
-      "Khả năng học hỏi và thích nghi nhanh",
-      "Sáng tạo trong việc giải quyết vấn đề",
-      "Làm việc độc lập hiệu quả"
-    ],
-    developmentAreas: [
-      "Kỹ năng giao tiếp và thuyết trình",
-      "Quản lý dự án và deadline",
-      "Kỹ năng lãnh đạo và làm việc nhóm",
-      "Khả năng thương mại hóa ý tưởng"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí nghiên cứu và phát triển",
-      "Phát triển kỹ năng giao tiếp để chia sẻ ý tưởng hiệu quả",
-      "Tham gia các dự án sáng tạo và đầy thử thách",
-      "Cân bằng giữa lý thuyết và ứng dụng thực tế"
-    ],
+    keyStrengths: ["Tư duy logic và phân tích xuất sắc", "Khả năng học hỏi và thích nghi nhanh", "Sáng tạo trong việc giải quyết vấn đề", "Làm việc độc lập hiệu quả"],
+    developmentAreas: ["Kỹ năng giao tiếp và thuyết trình", "Quản lý dự án và deadline", "Kỹ năng lãnh đạo và làm việc nhóm", "Khả năng thương mại hóa ý tưởng"],
+    careerTips: ["Tìm kiếm các vị trí nghiên cứu và phát triển", "Phát triển kỹ năng giao tiếp để chia sẻ ý tưởng hiệu quả", "Tham gia các dự án sáng tạo và đầy thử thách", "Cân bằng giữa lý thuyết và ứng dụng thực tế"],
     salary_ranges: {
       entry: "12-20 triệu VNĐ/tháng",
       mid: "20-40 triệu VNĐ/tháng",
@@ -161,24 +131,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Quản lý tài chính, đầu tư và đưa ra các quyết định tài chính chiến lược."
       }
     ],
-    keyStrengths: [
-      "Khả năng lãnh đạo và truyền cảm hứng",
-      "Tư duy chiến lược và nhìn xa trông rộng",
-      "Kỹ năng ra quyết định nhanh và chính xác",
-      "Khả năng tổ chức và điều phối hiệu quả"
-    ],
-    developmentAreas: [
-      "Kỹ năng lắng nghe và empathy",
-      "Quản lý stress và cân bằng cuộc sống",
-      "Patience với những người làm việc chậm hơn",
-      "Kỹ năng delegate hiệu quả"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí lãnh đạo và có tầm ảnh hưởng",
-      "Phát triển kỹ năng emotional intelligence",
-      "Xây dựng network mạnh trong ngành",
-      "Liên tục học hỏi về quản lý và lãnh đạo"
-    ],
+    keyStrengths: ["Khả năng lãnh đạo và truyền cảm hứng", "Tư duy chiến lược và nhìn xa trông rộng", "Kỹ năng ra quyết định nhanh và chính xác", "Khả năng tổ chức và điều phối hiệu quả"],
+    developmentAreas: ["Kỹ năng lắng nghe và empathy", "Quản lý stress và cân bằng cuộc sống", "Patience với những người làm việc chậm hơn", "Kỹ năng delegate hiệu quả"],
+    careerTips: ["Tìm kiếm các vị trí lãnh đạo và có tầm ảnh hưởng", "Phát triển kỹ năng emotional intelligence", "Xây dựng network mạnh trong ngành", "Liên tục học hỏi về quản lý và lãnh đạo"],
     salary_ranges: {
       entry: "18-30 triệu VNĐ/tháng",
       mid: "30-60 triệu VNĐ/tháng",
@@ -216,24 +171,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Thiết kế và phát triển các giải pháp công nghệ mới."
       }
     ],
-    keyStrengths: [
-      "Khả năng sáng tạo và đổi mới",
-      "Kỹ năng giao tiếp và thuyết phục",
-      "Tư duy nhanh nhạy và linh hoạt",
-      "Khả năng nhìn thấy cơ hội mới"
-    ],
-    developmentAreas: [
-      "Kỹ năng quản lý thời gian và tổ chức",
-      "Follow-through và hoàn thành dự án",
-      "Chi tiết và chính xác trong công việc",
-      "Patience với quá trình dài hạn"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí sáng tạo và đầy thử thách",
-      "Phát triển kỹ năng quản lý dự án",
-      "Tham gia vào các startup hoặc dự án đổi mới",
-      "Xây dựng network rộng trong nhiều lĩnh vực"
-    ],
+    keyStrengths: ["Khả năng sáng tạo và đổi mới", "Kỹ năng giao tiếp và thuyết phục", "Tư duy nhanh nhạy và linh hoạt", "Khả năng nhìn thấy cơ hội mới"],
+    developmentAreas: ["Kỹ năng quản lý thời gian và tổ chức", "Follow-through và hoàn thành dự án", "Chi tiết và chính xác trong công việc", "Patience với quá trình dài hạn"],
+    careerTips: ["Tìm kiếm công việc đa dạng, thú vị và có ý nghĩa xã hội", "Phát triển kỹ năng quản lý dự án để hoàn thành công việc đúng hạn", "Xây dựng mạng lưới quan hệ rộng và đa dạng trong nhiều lĩnh vực", "Học cách cân bằng giữa nhiều dự án và khả năng tập trung sâu", "Tìm kiếm mentor và coach để hướng dẫn phát triển sự nghiệp", "Tạo ra routine và hệ thống làm việc phù hợp với phong cách cá nhân", "Đừng ngại thử nghiệm các vai trò và ngành nghề khác nhau"],
     salary_ranges: {
       entry: "15-25 triệu VNĐ/tháng",
       mid: "25-45 triệu VNĐ/tháng",
@@ -271,24 +211,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Làm việc vì các mục tiêu xã hội và tạo ra tác động tích cực."
       }
     ],
-    keyStrengths: [
-      "Khả năng hiểu sâu về con người",
-      "Tầm nhìn dài hạn và ý nghĩa",
-      "Kỹ năng giao tiếp empathy",
-      "Sáng tạo và tư duy độc đáo"
-    ],
-    developmentAreas: [
-      "Kỹ năng assertiveness và đàm phán",
-      "Quản lý stress và burnout",
-      "Networking và xây dựng mối quan hệ",
-      "Business acumen và tư duy thương mại"
-    ],
-    careerTips: [
-      "Tìm kiếm công việc có ý nghĩa và tác động tích cực",
-      "Phát triển kỹ năng leadership nhẹ nhàng",
-      "Cân bằng giữa lý tưởng và thực tế",
-      "Tạo ra không gian làm việc phù hợp với bản thân"
-    ],
+    keyStrengths: ["Khả năng hiểu sâu về con người", "Tầm nhìn dài hạn và ý nghĩa", "Kỹ năng giao tiếp empathy", "Sáng tạo và tư duy độc đáo"],
+    developmentAreas: ["Kỹ năng assertiveness và đàm phán", "Quản lý stress và burnout", "Networking và xây dựng mối quan hệ", "Business acumen và tư duy thương mại"],
+    careerTips: ["Tìm kiếm công việc có ý nghĩa và tác động tích cực", "Phát triển kỹ năng leadership nhẹ nhàng", "Cân bằng giữa lý tưởng và thực tế", "Tạo ra không gian làm việc phù hợp với bản thân"],
     salary_ranges: {
       entry: "10-18 triệu VNĐ/tháng",
       mid: "18-35 triệu VNĐ/tháng",
@@ -326,24 +251,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Làm việc vì các mục tiêu xã hội và nhân đạo."
       }
     ],
-    keyStrengths: [
-      "Sáng tạo và tư duy độc đáo",
-      "Empathy và hiểu biết sâu sắc",
-      "Giá trị mạnh mẽ và chính trực",
-      "Khả năng truyền cảm hứng"
-    ],
-    developmentAreas: [
-      "Kỹ năng assertiveness và đàm phán",
-      "Quản lý thời gian và tổ chức",
-      "Kỹ năng business và tài chính",
-      "Networking và marketing bản thân"
-    ],
-    careerTips: [
-      "Tìm kiếm công việc phù hợp với giá trị cá nhân",
-      "Phát triển portfolio và thương hiệu cá nhân",
-      "Cân bằng giữa passion và thu nhập",
-      "Tìm kiếm mentor và community hỗ trợ"
-    ],
+    keyStrengths: ["Sáng tạo và tư duy độc đáo", "Empathy và hiểu biết sâu sắc", "Giá trị mạnh mẽ và chính trực", "Khả năng truyền cảm hứng"],
+    developmentAreas: ["Kỹ năng assertiveness và đàm phán", "Quản lý thời gian và tổ chức", "Kỹ năng business và tài chính", "Networking và marketing bản thân"],
+    careerTips: ["Tìm kiếm công việc phù hợp với giá trị cá nhân", "Phát triển portfolio và thương hiệu cá nhân", "Cân bằng giữa passion và thu nhập", "Tìm kiếm mentor và community hỗ trợ"],
     salary_ranges: {
       entry: "8-15 triệu VNĐ/tháng",
       mid: "15-28 triệu VNĐ/tháng",
@@ -381,24 +291,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Xây dựng mối quan hệ và quản lý cộng đồng."
       }
     ],
-    keyStrengths: [
-      "Khả năng lãnh đạo và truyền cảm hứng",
-      "Kỹ năng giao tiếp xuất sắc",
-      "Hiểu biết sâu sắc về con người",
-      "Tạo ra môi trường hợp tác tích cực"
-    ],
-    developmentAreas: [
-      "Kỹ năng đưa ra quyết định khó khăn",
-      "Quản lý stress và burnout",
-      "Balance giữa giúp đỡ người khác và bản thân",
-      "Kỹ năng phân tích và logic"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí có tương tác nhiều với con người",
-      "Phát triển kỹ năng quản lý và lãnh đạo",
-      "Học cách saying no và set boundaries",
-      "Xây dựng network mạnh trong ngành"
-    ],
+    keyStrengths: ["Khả năng lãnh đạo và truyền cảm hứng", "Kỹ năng giao tiếp xuất sắc", "Hiểu biết sâu sắc về con người", "Tạo ra môi trường hợp tác tích cực"],
+    developmentAreas: ["Kỹ năng đưa ra quyết định khó khăn", "Quản lý stress và burnout", "Balance giữa giúp đỡ người khác và bản thân", "Kỹ năng phân tích và logic"],
+    careerTips: ["Tìm kiếm các vị trí có tương tác nhiều với con người", "Phát triển kỹ năng quản lý và lãnh đạo", "Học cách saying no và set boundaries", "Xây dựng network mạnh trong ngành"],
     salary_ranges: {
       entry: "12-20 triệu VNĐ/tháng",
       mid: "20-40 triệu VNĐ/tháng",
@@ -441,31 +336,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Phát triển kinh doanh mới, xây dựng mối quan hệ khách hàng và đảm bảo sự hài lòng của khách hàng."
       }
     ],
-    keyStrengths: [
-      "Năng lượng tích cực và nhiệt huyết cao trong công việc",
-      "Khả năng sáng tạo và đổi mới liên tục",
-      "Kỹ năng giao tiếp và networking xuất sắc",
-      "Khả năng truyền cảm hứng và động viên người khác",
-      "Thích nghi nhanh với những thay đổi và thử thách mới",
-      "Tư duy mở và khả năng nhìn nhận đa chiều"
-    ],
-    developmentAreas: [
-      "Kỹ năng quản lý thời gian và tổ chức công việc hiệu quả",
-      "Khả năng tập trung lâu dài vào một nhiệm vụ cụ thể",
-      "Kỹ năng phân tích dữ liệu và viết báo cáo chi tiết",
-      "Kiên nhẫn với công việc có tính chất lặp lại và quy trình cố định",
-      "Kỹ năng quản lý tài chính cá nhân và lập ngân sách",
-      "Khả năng đưa ra quyết định khó khăn và dứt khoát"
-    ],
-    careerTips: [
-      "Tìm kiếm công việc đa dạng, thú vị và có ý nghĩa xã hội",
-      "Phát triển kỹ năng quản lý dự án để hoàn thành công việc đúng hạn",
-      "Xây dựng mạng lưới quan hệ rộng và đa dạng trong nhiều lĩnh vực",
-      "Học cách cân bằng giữa nhiều dự án và khả năng tập trung sâu",
-      "Tìm kiếm mentor và coach để hướng dẫn phát triển sự nghiệp",
-      "Tạo ra routine và hệ thống làm việc phù hợp với phong cách cá nhân",
-      "Đừng ngại thử nghiệm các vai trò và ngành nghề khác nhau"
-    ],
+    keyStrengths: ["Năng lượng tích cực và nhiệt huyết cao trong công việc", "Khả năng sáng tạo và đổi mới liên tục", "Kỹ năng giao tiếp và networking xuất sắc", "Khả năng truyền cảm hứng và động viên người khác", "Thích nghi nhanh với những thay đổi và thử thách mới", "Tư duy mở và khả năng nhìn nhận đa chiều"],
+    developmentAreas: ["Kỹ năng quản lý thời gian và tổ chức công việc hiệu quả", "Khả năng tập trung lâu dài vào một nhiệm vụ cụ thể", "Kỹ năng phân tích dữ liệu và viết báo cáo chi tiết", "Kiên nhẫn với công việc có tính chất lặp lại và quy trình cố định", "Kỹ năng quản lý tài chính cá nhân và lập ngân sách", "Khả năng đưa ra quyết định khó khăn và dứt khoát"],
+    careerTips: ["Tìm kiếm công việc đa dạng, thú vị và có ý nghĩa xã hội", "Phát triển kỹ năng quản lý dự án để hoàn thành công việc đúng hạn", "Xây dựng mạng lưới quan hệ rộng và đa dạng trong nhiều lĩnh vực", "Học cách cân bằng giữa nhiều dự án và khả năng tập trung sâu", "Tìm kiếm mentor và coach để hướng dẫn phát triển sự nghiệp", "Tạo ra routine và hệ thống làm việc phù hợp với phong cách cá nhân", "Đừng ngại thử nghiệm các vai trò và ngành nghề khác nhau"],
     salary_ranges: {
       entry: "10-18 triệu VNĐ/tháng",
       mid: "18-35 triệu VNĐ/tháng", 
@@ -503,31 +376,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Quản lý tài chính với độ chính xác cao và tuân thủ nghiêm ngặt các quy định."
       }
     ],
-    keyStrengths: [
-      "Tính trách nhiệm cao và đáng tin cậy",
-      "Chú ý đến chi tiết và độ chính xác",
-      "Kỹ năng lắng nghe và empathy tốt",
-      "Khả năng tổ chức và quản lý thời gian hiệu quả",
-      "Sự kiên nhẫn và bền bỉ trong công việc",
-      "Khả năng làm việc nhóm hòa hợp"
-    ],
-    developmentAreas: [
-      "Tự tin thể hiện ý kiến và đóng góp",
-      "Kỹ năng negotiation và conflict resolution",
-      "Khả năng thích nghi với thay đổi",
-      "Leadership và quản lý đội nhóm",
-      "Tư duy chiến lược và nhìn xa trông rộng",
-      "Kỹ năng public speaking"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí có ý nghĩa xã hội và giúp đỡ người khác",
-      "Phát triển kỹ năng lãnh đạo từ từ trong vai trò hỗ trợ",
-      "Xây dựng mạng lưới quan hệ trong lĩnh vực chuyên môn",
-      "Học cách saying no và thiết lập boundaries",
-      "Tìm kiếm feedback để cải thiện hiệu suất",
-      "Cân bằng giữa giúp đỡ người khác và phát triển bản thân",
-      "Tham gia các khóa đào tạo soft skills"
-    ],
+    keyStrengths: ["Tính trách nhiệm cao và đáng tin cậy", "Chú ý đến chi tiết và độ chính xác", "Kỹ năng lắng nghe và empathy tốt", "Khả năng tổ chức và quản lý thời gian hiệu quả", "Sự kiên nhẫn và bền bỉ trong công việc", "Khả năng làm việc nhóm hòa hợp"],
+    developmentAreas: ["Tự tin thể hiện ý kiến và đóng góp", "Kỹ năng negotiation và conflict resolution", "Khả năng thích nghi với thay đổi", "Leadership và quản lý đội nhóm", "Tư duy chiến lược và nhìn xa trông rộng", "Kỹ năng public speaking"],
+    careerTips: ["Tìm kiếm các vị trí có ý nghĩa xã hội và giúp đỡ người khác", "Phát triển kỹ năng lãnh đạo từ từ trong vai trò hỗ trợ", "Xây dựng mạng lưới quan hệ trong lĩnh vực chuyên môn", "Học cách saying no và thiết lập boundaries", "Tìm kiếm feedback để cải thiện hiệu suất", "Cân bằng giữa giúp đỡ người khác và phát triển bản thân", "Tham gia các khóa đào tạo soft skills"],
     salary_ranges: {
       entry: "8-15 triệu VNĐ/tháng",
       mid: "15-30 triệu VNĐ/tháng",
@@ -565,31 +416,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Làm việc với thiên nhiên và bảo vệ môi trường, kết hợp passion với trách nhiệm xã hội."
       }
     ],
-    keyStrengths: [
-      "Khả năng sáng tạo và thẩm mỹ cao",
-      "Empathy và hiểu biết sâu sắc về cảm xúc",
-      "Linh hoạt và thích nghi tốt",
-      "Làm việc độc lập hiệu quả",
-      "Tinh thần phục vụ cộng đồng",
-      "Khả năng quan sát và chú ý đến chi tiết"
-    ],
-    developmentAreas: [
-      "Kỹ năng quản lý thời gian và deadline",
-      "Tự tin trình bày ý tưởng trước đám đông",
-      "Kỹ năng negotiation và business",
-      "Leadership và quản lý đội nhóm",
-      "Kỹ năng marketing bản thân",
-      "Khả năng đối mặt với conflict"
-    ],
-    careerTips: [
-      "Tìm kiếm công việc phù hợp với giá trị cá nhân",
-      "Phát triển portfolio và thương hiệu cá nhân",
-      "Học cách quản lý tài chính và pricing",
-      "Xây dựng network trong cộng đồng sáng tạo",
-      "Cân bằng giữa passion và thu nhập ổn định",
-      "Tìm kiếm mentor trong lĩnh vực quan tâm",
-      "Đừng ngại thử nghiệm các hướng nghề nghiệp khác nhau"
-    ],
+    keyStrengths: ["Khả năng sáng tạo và thẩm mỹ cao", "Empathy và hiểu biết sâu sắc về cảm xúc", "Linh hoạt và thích nghi tốt", "Làm việc độc lập hiệu quả", "Tinh thần phục vụ cộng đồng", "Khả năng quan sát và chú ý đến chi tiết"],
+    developmentAreas: ["Kỹ năng quản lý thời gian và deadline", "Tự tin trình bày ý tưởng trước đám đông", "Kỹ năng negotiation và business", "Leadership và quản lý đội nhóm", "Kỹ năng marketing bản thân", "Khả năng đối mặt với conflict"],
+    careerTips: ["Tìm kiếm công việc phù hợp với giá trị cá nhân", "Phát triển portfolio và thương hiệu cá nhân", "Học cách quản lý tài chính và pricing", "Xây dựng network trong cộng đồng sáng tạo", "Cân bằng giữa passion và thu nhập ổn định", "Tìm kiếm mentor trong lĩnh vực quan tâm", "Đừng ngại thử nghiệm các hướng nghề nghiệp khác nhau"],
     salary_ranges: {
       entry: "7-12 triệu VNĐ/tháng",
       mid: "12-25 triệu VNĐ/tháng",
@@ -627,31 +456,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Làm việc trong lĩnh vực y tế với yêu cầu chính xác cao và tuân thủ nghiêm ngặt quy trình."
       }
     ],
-    keyStrengths: [
-      "Đáng tin cậy và có trách nhiệm cao",
-      "Tổ chức và quản lý thời gian xuất sắc",
-      "Chú ý đến chi tiết và độ chính xác",
-      "Kiên nhẫn và bền bỉ",
-      "Tuân thủ quy trình và deadline",
-      "Khả năng làm việc độc lập hiệu quả"
-    ],
-    developmentAreas: [
-      "Khả năng thích nghi với thay đổi",
-      "Kỹ năng giao tiếp và thuyết trình",
-      "Tư duy sáng tạo và innovation",
-      "Leadership và quản lý đội nhóm",
-      "Networking và xây dựng mối quan hệ",
-      "Tư duy chiến lược dài hạn"
-    ],
-    careerTips: [
-      "Tìm kiếm vị trí trong các tổ chức ổn định, có uy tín",
-      "Phát triển chuyên môn sâu trong lĩnh vực cụ thể",
-      "Học cách thích nghi với công nghệ mới",
-      "Xây dựng reputation về độ tin cậy và chất lượng",
-      "Tham gia các khóa đào tạo leadership",
-      "Tìm kiếm cơ hội mentoring junior",
-      "Cân bằng giữa stability và growth opportunities"
-    ],
+    keyStrengths: ["Đáng tin cậy và có trách nhiệm cao", "Tổ chức và quản lý thời gian xuất sắc", "Chú ý đến chi tiết và độ chính xác", "Kiên nhẫn và bền bỉ", "Tuân thủ quy trình và deadline", "Khả năng làm việc độc lập hiệu quả"],
+    developmentAreas: ["Khả năng thích nghi với thay đổi", "Kỹ năng giao tiếp và thuyết trình", "Tư duy sáng tạo và innovation", "Leadership và quản lý đội nhóm", "Networking và xây dựng mối quan hệ", "Tư duy chiến lược dài hạn"],
+    careerTips: ["Tìm kiếm vị trí trong các tổ chức ổn định, có uy tín", "Phát triển chuyên môn sâu trong lĩnh vực cụ thể", "Học cách thích nghi với công nghệ mới", "Xây dựng reputation về độ tin cậy và chất lượng", "Tham gia các khóa đào tạo leadership", "Tìm kiếm cơ hội mentoring junior", "Cân bằng giữa stability và growth opportunities"],
     salary_ranges: {
       entry: "12-18 triệu VNĐ/tháng",
       mid: "18-35 triệu VNĐ/tháng",
@@ -689,31 +496,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Làm việc trong môi trường ngoài trời và các hoạt động thể chất."
       }
     ],
-    keyStrengths: [
-      "Kỹ năng giải quyết vấn đề thực tế xuất sắc",
-      "Khả năng làm việc với tay và tools",
-      "Thích nghi nhanh và linh hoạt",
-      "Làm việc độc lập hiệu quả",
-      "Calm under pressure",
-      "Tư duy logic và phân tích"
-    ],
-    developmentAreas: [
-      "Kỹ năng giao tiếp và teamwork",
-      "Planning và time management dài hạn",
-      "Leadership và quản lý người khác",
-      "Business và financial skills",
-      "Presentation và public speaking",
-      "Customer service và relationship building"
-    ],
-    careerTips: [
-      "Tìm kiếm công việc cho phép hands-on và problem solving",
-      "Phát triển technical expertise trong lĩnh vực quan tâm",
-      "Học cách communicate technical ideas hiệu quả",
-      "Tham gia các certification và training programs",
-      "Xây dựng portfolio về các dự án đã thực hiện",
-      "Network với các professionals trong field",
-      "Cân bằng giữa independent work và team collaboration"
-    ],
+    keyStrengths: ["Kỹ năng giải quyết vấn đề thực tế xuất sắc", "Khả năng làm việc với tay và tools", "Thích nghi nhanh và linh hoạt", "Làm việc độc lập hiệu quả", "Calm under pressure", "Tư duy logic và phân tích"],
+    developmentAreas: ["Kỹ năng giao tiếp và teamwork", "Planning và time management dài hạn", "Leadership và quản lý người khác", "Business và financial skills", "Presentation và public speaking", "Customer service và relationship building"],
+    careerTips: ["Tìm kiếm công việc cho phép hands-on và problem solving", "Phát triển technical expertise trong lĩnh vực quan tâm", "Học cách communicate technical ideas hiệu quả", "Tham gia các certification và training programs", "Xây dựng portfolio về các dự án đã thực hiện", "Network với các professionals trong field", "Cân bằng giữa independent work và team collaboration"],
     salary_ranges: {
       entry: "10-16 triệu VNĐ/tháng",
       mid: "16-32 triệu VNĐ/tháng",
@@ -751,31 +536,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Xây dựng mối quan hệ khách hàng và thực hiện các hoạt động marketing, events."
       }
     ],
-    keyStrengths: [
-      "Kỹ năng giao tiếp và interpersonal xuất sắc",
-      "Empathy và quan tâm đến người khác",
-      "Tổ chức và quản lý events hiệu quả",
-      "Khả năng motivate và support team members",
-      "Responsible và dependable",
-      "Tạo ra môi trường làm việc tích cực"
-    ],
-    developmentAreas: [
-      "Assertiveness và conflict resolution",
-      "Tư duy chiến lược và big picture thinking",
-      "Technical skills và data analysis",
-      "Self-care và setting boundaries",
-      "Critical thinking và objective decision making",
-      "Innovation và creative problem solving"
-    ],
-    careerTips: [
-      "Tìm kiếm vai trò có tương tác nhiều với người khác",
-      "Phát triển leadership skills và emotional intelligence",
-      "Học cách balance giữa helping others và career goals",
-      "Xây dựng professional network rộng",
-      "Tham gia các training về conflict management",
-      "Seek feedback để improve performance",
-      "Consider roles trong non-profit hoặc service industries"
-    ],
+    keyStrengths: ["Kỹ năng giao tiếp và interpersonal xuất sắc", "Empathy và quan tâm đến người khác", "Tổ chức và quản lý events hiệu quả", "Khả năng motivate và support team members", "Responsible và dependable", "Tạo ra môi trường làm việc tích cực"],
+    developmentAreas: ["Assertiveness và conflict resolution", "Tư duy chiến lược và big picture thinking", "Technical skills và data analysis", "Self-care và setting boundaries", "Critical thinking và objective decision making", "Innovation và creative problem solving"],
+    careerTips: ["Tìm kiếm vai trò có tương tác nhiều với người khác", "Phát triển leadership skills và emotional intelligence", "Học cách balance giữa helping others và career goals", "Xây dựng professional network rộng", "Tham gia các training về conflict management", "Seek feedback để improve performance", "Consider roles trong non-profit hoặc service industries"],
     salary_ranges: {
       entry: "10-16 triệu VNĐ/tháng",
       mid: "16-30 triệu VNĐ/tháng",
@@ -813,31 +576,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Cung cấp dịch vụ khách hàng với sự nhiệt tình và attention to experience."
       }
     ],
-    keyStrengths: [
-      "Năng lượng tích cực và enthusiasm",
-      "Kỹ năng communication và presentation",
-      "Khả năng inspire và motivate người khác",
-      "Adaptability và flexibility",
-      "Strong people skills và emotional intelligence",
-      "Creativity và innovation trong approach"
-    ],
-    developmentAreas: [
-      "Time management và organization skills",
-      "Long-term planning và strategic thinking",
-      "Conflict resolution và difficult conversations",
-      "Technical skills và data analysis",
-      "Follow-through và attention to detail",
-      "Financial planning và money management"
-    ],
-    careerTips: [
-      "Tìm kiếm roles cho phép interaction với diverse groups",
-      "Develop professional skills để support natural talents",
-      "Build network trong industries quan tâm",
-      "Learn to balance spontaneity với professional requirements",
-      "Seek mentorship để develop career planning skills",
-      "Consider entrepreneurship hoặc freelancing opportunities",
-      "Focus trên roles có immediate impact và visible results"
-    ],
+    keyStrengths: ["Năng lượng tích cực và enthusiasm", "Kỹ năng communication và presentation", "Khả năng inspire và motivate người khác", "Adaptability và flexibility", "Strong people skills và emotional intelligence", "Creativity và innovation trong approach"],
+    developmentAreas: ["Time management và organization skills", "Long-term planning và strategic thinking", "Conflict resolution và difficult conversations", "Technical skills và data analysis", "Follow-through và attention to detail", "Financial planning và money management"],
+    careerTips: ["Tìm kiếm roles cho phép interaction với diverse groups", "Develop professional skills để support natural talents", "Build network trong industries quan tâm", "Learn to balance spontaneity với professional requirements", "Seek mentorship để develop career planning skills", "Consider entrepreneurship hoặc freelancing opportunities", "Focus trên roles có immediate impact và visible results"],
     salary_ranges: {
       entry: "8-14 triệu VNĐ/tháng",
       mid: "14-25 triệu VNĐ/tháng",
@@ -875,31 +616,9 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Ensure legal compliance, manage contracts và handle legal matters."
       }
     ],
-    keyStrengths: [
-      "Natural leadership và management abilities",
-      "Excellent organizational và planning skills",
-      "Strong decision-making và problem-solving",
-      "Results-oriented và goal-focused",
-      "Effective communication và delegation",
-      "Reliable và consistent performance"
-    ],
-    developmentAreas: [
-      "Flexibility và adapting to change",
-      "Emotional intelligence và empathy",
-      "Creative thinking và innovation",
-      "Patience với different working styles",
-      "Active listening và collaborative approach",
-      "Work-life balance và stress management"
-    ],
-    careerTips: [
-      "Seek leadership roles và management opportunities",
-      "Develop emotional intelligence để complement natural skills",
-      "Build diverse professional network",
-      "Stay current với industry trends và best practices",
-      "Learn to delegate effectively và trust team members",
-      "Invest in continuous learning và professional development",
-      "Balance directive style với collaborative leadership"
-    ],
+    keyStrengths: ["Natural leadership và management abilities", "Excellent organizational và planning skills", "Strong decision-making và problem-solving", "Results-oriented và goal-focused", "Effective communication và delegation", "Reliable và consistent performance"],
+    developmentAreas: ["Flexibility và adapting to change", "Emotional intelligence và empathy", "Creative thinking và innovation", "Patience với different working styles", "Active listening và collaborative approach", "Work-life balance và stress management"],
+    careerTips: ["Seek leadership roles và management opportunities", "Develop emotional intelligence để complement natural skills", "Build diverse professional network", "Stay current với industry trends và best practices", "Learn to delegate effectively và trust team members", "Invest in continuous learning và professional development", "Balance directive style với collaborative leadership"],
     salary_ranges: {
       entry: "15-22 triệu VNĐ/tháng",
       mid: "22-45 triệu VNĐ/tháng",
@@ -937,99 +656,15 @@ export const careerGuidanceData: Record<string, CareerGuidanceDetail> = {
         description: "Start và manage businesses, work directly với customers và make quick business decisions."
       }
     ],
-    keyStrengths: [
-      "Excellent people skills và ability to connect quickly",
-      "Adaptability và flexibility trong changing situations",
-      "Strong persuasion và negotiation abilities",
-      "Practical problem-solving với immediate solutions",
-      "High energy và motivation",
-      "Crisis management và ability to stay calm under pressure"
-    ],
-    developmentAreas: [
-      "Long-term planning và strategic thinking",
-      "Attention to detail và thoroughness",
-      "Patience với processes và procedures",
-      "Financial planning và money management",
-      "Following through trên commitments",
-      "Developing depth của expertise trong specific areas"
-    ],
-    careerTips: [
-      "Choose careers với variety và people interaction",
-      "Develop expertise trong specific sales hoặc service areas",
-      "Build strong professional network for referrals",
-      "Learn basic financial management for entrepreneurship",
-      "Seek roles với quick feedback và visible results",
-      "Consider commission-based roles để maximize earning potential",
-      "Balance action-orientation với strategic planning skills"
-    ],
+    keyStrengths: ["Excellent people skills và ability to connect quickly", "Adaptability và flexibility trong changing situations", "Strong persuasion và negotiation abilities", "Practical problem-solving với immediate solutions", "High energy và motivation", "Crisis management và ability to stay calm under pressure"],
+    developmentAreas: ["Long-term planning và strategic thinking", "Attention to detail và thoroughness", "Patience với processes và procedures", "Financial planning và money management", "Following through trên commitments", "Developing depth của expertise trong specific areas"],
+    careerTips: ["Choose careers với variety và people interaction", "Develop expertise trong specific sales hoặc service areas", "Build strong professional network for referrals", "Learn basic financial management for entrepreneurship", "Seek roles với quick feedback và visible results", "Consider commission-based roles để maximize earning potential", "Balance action-orientation với strategic planning skills"],
     salary_ranges: {
       entry: "12-18 triệu VNĐ/tháng",
       mid: "18-35 triệu VNĐ/tháng",
       senior: "35-65+ triệu VNĐ/tháng"
     },
     industry_outlook: "Tích cực với growing opportunities trong sales, service industries, và entrepreneurship, đặc biệt trong experience economy."
-  },
-
-  INTJ: {
-    personalityType: "INTJ",
-    overview: "INTJ - 'Kiến trúc sư' là những chiến lược gia bẩm sinh, có tầm nhìn xa và khả năng biến ý tưởng thành hiện thực. Họ làm việc tốt nhất khi được tự chủ và tập trung vào các dự án phức tạp, dài hạn.",
-    workEnvironment: {
-      preferred: "Môi trường yên tĩnh, độc lập, ít gián đoạn. Có quyền tự chủ cao trong ra quyết định và được làm việc với các vấn đề phức tạp, thử thách trí tuệ.",
-      avoid: "Môi trường ồn ào, quá nhiều cuộc họp không cần thiết, vi quản lý chi tiết hoặc công việc lặp đi lặp lại thiếu tính sáng tạo."
-    },
-    idealRoles: [
-      {
-        category: "Công nghệ & Phát triển hệ thống",
-        roles: ["Software Architect", "Senior Developer", "System Engineer", "CTO", "Technical Lead"],
-        description: "Thiết kế và phát triển các hệ thống phức tạp, dẫn dắt đội ngũ kỹ thuật và đưa ra các quyết định công nghệ quan trọng."
-      },
-      {
-        category: "Tài chính & Đầu tư",
-        roles: ["Investment Analyst", "Quant Developer", "Financial Planner", "Risk Manager", "Portfolio Manager"],
-        description: "Phân tích thị trường tài chính, phát triển mô hình đầu tư và quản lý rủi ro với phương pháp tiếp cận có hệ thống."
-      },
-      {
-        category: "Nghiên cứu & Khoa học",
-        roles: ["Research Scientist", "Data Scientist", "Professor", "R&D Manager", "Strategy Consultant"],
-        description: "Thực hiện nghiên cứu sâu, phát triển lý thuyết mới và ứng dụng kiến thức khoa học vào thực tế."
-      },
-      {
-        category: "Quản lý & Chiến lược",
-        roles: ["CEO", "Operations Director", "Strategy Manager", "Business Analyst", "Management Consultant"],
-        description: "Xây dựng chiến lược dài hạn, tối ưu hóa quy trình và dẫn dắt tổ chức đạt được mục tiêu."
-      }
-    ],
-    keyStrengths: [
-      "Tư duy chiến lược và nhìn xa trông rộng",
-      "Khả năng phân tích và giải quyết vấn đề phức tạp một cách có hệ thống",
-      "Làm việc độc lập hiệu quả và tự động viên bản thân",
-      "Có tầm nhìn dài hạn và khả năng lập kế hoạch chi tiết",
-      "Quyết đoán và kiên định với các quyết định đã đưa ra",
-      "Khả năng tổng hợp thông tin từ nhiều nguồn khác nhau"
-    ],
-    developmentAreas: [
-      "Kỹ năng giao tiếp và thuyết trình để truyền đạt ý tưởng hiệu quả hơn",
-      "Kỹ năng lãnh đạo và quản lý đội nhóm một cách nhân văn",
-      "Kiên nhẫn với những người làm việc chậm hơn hoặc cần nhiều hướng dẫn",
-      "Kỹ năng networking và xây dựng mối quan hệ trong công việc",
-      "Khả năng thích nghi với những thay đổi đột ngột",
-      "Cân bằng giữa tính hoàn hảo và thực tế"
-    ],
-    careerTips: [
-      "Tìm kiếm các vị trí cho phép làm việc độc lập và có quyền tự chủ cao",
-      "Phát triển kỹ năng leadership để dẫn dắt team hiệu quả",
-      "Tham gia các dự án có tầm ảnh hưởng lớn và tính chất dài hạn",
-      "Đầu tư thời gian để xây dựng network chuyên nghiệp",
-      "Liên tục học hỏi và cập nhật kiến thức trong lĩnh vực chuyên môn",
-      "Tìm mentor hoặc coach để phát triển soft skills",
-      "Cân bằng giữa công việc và cuộc sống cá nhân"
-    ],
-    salary_ranges: {
-      entry: "15-25 triệu VNĐ/tháng",
-      mid: "25-50 triệu VNĐ/tháng", 
-      senior: "50-100+ triệu VNĐ/tháng"
-    },
-    industry_outlook: "Rất tích cực! INTJ đặc biệt thành công trong thời đại công nghệ số, AI và big data. Nhu cầu cao cho các vị trí chiến lược, quản lý cấp cao và chuyên gia trong các lĩnh vực công nghệ, tài chính, tư vấn."
   }
 };
 

@@ -114,17 +114,17 @@ const INDEX_DEFINITIONS: IndexDefinition[] = [
     },
   },
 
-  // Personality Types Collection
+  // Personality Detail Info Collection (personalitydetailinfos)
   {
-    collectionName: 'personalitytypes',
-    indexName: 'personality_code_unique',
-    keys: { code: 1 },
+    collectionName: 'personalitydetailinfos',
+    indexName: 'personality_detail_type_unique',
+    keys: { type: 1 },
     options: { unique: true },
   },
   {
-    collectionName: 'personalitytypes',
-    indexName: 'personality_category',
-    keys: { category: 1 },
+    collectionName: 'personalitydetailinfos',
+    indexName: 'personality_detail_name',
+    keys: { name: 1 },
     options: { background: true },
   },
 
@@ -310,7 +310,7 @@ class DatabaseIndexManager {
         throw new Error('Database connection not established');
       }
 
-      const collections = ['users', 'careers', 'personalitytypes', 'testresults'];
+      const collections = ['users', 'careers', 'testresults'];
       
       for (const collectionName of collections) {
         await this.analyzeCollectionIndexes(db, collectionName);
@@ -419,7 +419,7 @@ class DatabaseIndexManager {
         throw new Error('Database connection not established');
       }
 
-      const collections = ['users', 'careers', 'personalitytypes', 'testresults'];
+      const collections = ['users', 'careers', 'testresults'];
       
       for (const collectionName of collections) {
         await this.dropCollectionUnusedIndexes(db, collectionName);
@@ -491,7 +491,7 @@ class DatabaseIndexManager {
         throw new Error('Database connection not established');
       }
 
-      const collections = ['users', 'careers', 'personalitytypes', 'testresults'];
+      const collections = ['users', 'careers', 'testresults'];
       const resultCollections = [];
 
       for (const collectionName of collections) {

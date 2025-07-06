@@ -32,7 +32,15 @@ export default function ChangePasswordPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        setSuccess('Đổi mật khẩu thành công');
+        // Kiểm tra xem có thông báo về email không
+        const emailNotified = data?.emailNotificationSent;
+        
+        setSuccess(
+          emailNotified 
+            ? 'Đổi mật khẩu thành công! 📧 Chúng tôi đã gửi email thông báo đến địa chỉ email của bạn.' 
+            : 'Đổi mật khẩu thành công!'
+        );
+        
         setOldPassword('');
         setNewPassword('');
         setConfirmPassword('');
@@ -57,7 +65,14 @@ export default function ChangePasswordPage() {
             <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+              {success.includes('📧') && (
+                <Box sx={{ mt: 1, fontSize: '0.875rem', opacity: 0.8 }}>
+                  💡 Vui lòng kiểm tra hộp thư (và thư mục spam) để xem email thông báo bảo mật.
+                </Box>
+              )}
+            </Alert>
           )}
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField

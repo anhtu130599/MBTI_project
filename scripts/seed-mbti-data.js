@@ -72,6 +72,8 @@ const PersonalityDetailInfoSchema = new mongoose.Schema({
     improvement_skills: [{ type: String, required: true }],
     career_matches: [{ type: String, required: true }],
   },
+  work_environment_preferred: { type: String, required: true },
+  work_environment_avoid: { type: String, required: true },
 }, { timestamps: true, collection: 'personalitydetailinfos' });
 
 const MBTIDimensionInfo = mongoose.model('MBTIDimensionInfo', MBTIDimensionInfoSchema);
@@ -166,8 +168,8 @@ const personalityData = [
   {
     type: 'ENFP',
     name: 'Người truyền cảm hứng',
-    description: 'ENFP là những người năng động, sáng tạo và luôn tràn đầy nhiệt huyết. Họ yêu thích khám phá những khả năng mới và truyền cảm hứng cho người khác.',
-    note: 'Người có loại tính cách ENFP thường rất năng động, yêu thích sự tự do và không thích bị ràng buộc bởi các quy tắc cứng nhắc.',
+    description: 'Nhiệt huyết, sáng tạo, luôn mang lại năng lượng tích cực cho mọi người.',
+    note: 'Thích tự do, không thích bị gò bó bởi quy tắc.',
     trait_percentages: { E: 75, I: 25, S: 30, N: 70, T: 35, F: 65, J: 40, P: 60 },
     dimensions: [
       {
@@ -228,30 +230,31 @@ const personalityData = [
       }
     ],
     strengths: [
-      { title: 'Sáng tạo và đổi mới', description: 'Có khả năng nghĩ ra ý tưởng mới', why_explanation: 'Do xu hướng Trực giác mạnh' },
-      { title: 'Giao tiếp xuất sắc', description: 'Truyền đạt ý tưởng rõ ràng', why_explanation: 'Tính Hướng ngoại kết hợp Cảm xúc' }
+      { title: 'Sáng tạo', description: 'Luôn có ý tưởng mới.', why_explanation: 'Tư duy mở và linh hoạt.' },
+      { title: 'Truyền cảm hứng', description: 'Tạo động lực cho người khác.', why_explanation: 'Nhiệt tình và lạc quan.' }
     ],
     weaknesses: [
-      { title: 'Khó tập trung lâu dài', description: 'Mất hứng thú với công việc lặp lại', why_explanation: 'Xu hướng Trực giác và Nhận thức', improvement_advice: 'Chia nhỏ công việc thành các nhiệm vụ nhỏ' }
+      { title: 'Dễ mất tập trung', description: 'Khó kiên trì với việc lặp lại.', why_explanation: 'Thích sự mới mẻ.', improvement_advice: 'Chia nhỏ mục tiêu để dễ hoàn thành.' }
     ],
-    development_advice: ['Phát triển kỹ năng quản lý thời gian', 'Học cách tập trung lâu hơn'],
+    development_advice: ['Rèn luyện sự kiên nhẫn.', 'Tập trung vào mục tiêu quan trọng.'],
     relationship_analysis: {
-      interaction_style: 'ENFP thường là những người bạn tuyệt vời và rất dễ gần',
-      improvement_tips: ['Học cách lắng nghe tích cực', 'Dành thời gian chất lượng với bạn bè']
+      interaction_style: 'Thân thiện, dễ kết bạn.',
+      improvement_tips: ['Lắng nghe nhiều hơn.', 'Tôn trọng ý kiến khác biệt.']
     },
     career_guidance: {
-      suitable_fields: ['Marketing và Truyền thông', 'Giáo dục và Đào tạo'],
-      improvement_skills: ['Kỹ năng quản lý dự án', 'Khả năng phân tích dữ liệu'],
-      career_matches: ['Chuyên viên Marketing', 'Nhà tư vấn nghề nghiệp']
-    }
+      suitable_fields: ['Marketing', 'Giáo dục', 'Truyền thông'],
+      improvement_skills: ['Quản lý thời gian', 'Lập kế hoạch'],
+      career_matches: ['Chuyên viên sáng tạo', 'Giáo viên', 'Tư vấn viên']
+    },
+    work_environment_preferred: 'Môi trường sáng tạo, năng động, nhiều cơ hội giao tiếp và thử thách mới.',
+    work_environment_avoid: 'Môi trường gò bó, ít sáng tạo, quá nhiều quy tắc cứng nhắc.'
   },
-
   // ESTJ - Người điều hành
   {
     type: 'ESTJ',
     name: 'Người điều hành',
-    description: 'ESTJ là những người lãnh đạo tự nhiên, có tổ chức và thích kiểm soát. Họ có khả năng quản lý tốt và luôn hướng tới hiệu quả trong công việc.',
-    note: 'Người có loại tính cách ESTJ thường rất có trách nhiệm, thích trật tự và có khả năng lãnh đạo xuất sắc.',
+    description: 'Thực tế, quyết đoán, thích tổ chức và quản lý công việc.',
+    note: 'Luôn đề cao trách nhiệm và kỷ luật.',
     trait_percentages: { E: 70, I: 30, S: 75, N: 25, T: 80, F: 20, J: 85, P: 15 },
     dimensions: [
       {
@@ -312,22 +315,661 @@ const personalityData = [
       }
     ],
     strengths: [
-      { title: 'Khả năng lãnh đạo', description: 'Có khả năng điều hành và quản lý tốt', why_explanation: 'Do xu hướng Tư duy và Phán đoán mạnh' },
-      { title: 'Có tổ chức', description: 'Làm việc có hệ thống và hiệu quả', why_explanation: 'Xu hướng Cảm giác và Phán đoán' }
+      { title: 'Lãnh đạo tốt', description: 'Quản lý nhóm hiệu quả.', why_explanation: 'Tư duy logic và quyết đoán.' },
+      { title: 'Có tổ chức', description: 'Làm việc khoa học, rõ ràng.', why_explanation: 'Thích kế hoạch, kỷ luật.' }
     ],
     weaknesses: [
-      { title: 'Cứng nhắc', description: 'Khó thích nghi với thay đổi', why_explanation: 'Xu hướng Phán đoán quá mạnh', improvement_advice: 'Học cách linh hoạt hơn trong các tình huống mới' }
+      { title: 'Cứng nhắc', description: 'Khó thích nghi với thay đổi.', why_explanation: 'Quá chú trọng quy tắc.', improvement_advice: 'Cởi mở hơn với ý tưởng mới.' }
     ],
-    development_advice: ['Phát triển kỹ năng lắng nghe', 'Học cách linh hoạt hơn'],
+    development_advice: ['Lắng nghe ý kiến khác.', 'Linh hoạt hơn khi xử lý vấn đề.'],
     relationship_analysis: {
-      interaction_style: 'ESTJ thường là những người lãnh đạo mạnh mẽ nhưng cần học cách đồng cảm',
-      improvement_tips: ['Lắng nghe ý kiến người khác', 'Thể hiện sự quan tâm đến cảm xúc']
+      interaction_style: 'Thẳng thắn, rõ ràng.',
+      improvement_tips: ['Thể hiện sự quan tâm cảm xúc.', 'Kiên nhẫn với người khác.']
     },
     career_guidance: {
-      suitable_fields: ['Quản lý và Điều hành', 'Tài chính và Ngân hàng'],
-      improvement_skills: ['Kỹ năng đồng cảm', 'Khả năng thích nghi'],
-      career_matches: ['Giám đốc điều hành', 'Quản lý dự án']
-    }
+      suitable_fields: ['Quản lý', 'Tài chính', 'Hành chính'],
+      improvement_skills: ['Kỹ năng mềm', 'Giao tiếp'],
+      career_matches: ['Quản lý dự án', 'Trưởng phòng', 'Nhà tổ chức sự kiện']
+    },
+    work_environment_preferred: 'Môi trường có cấu trúc rõ ràng, mục tiêu cụ thể, đề cao trách nhiệm.',
+    work_environment_avoid: 'Môi trường thiếu tổ chức, vai trò không rõ ràng, quá nhiều thay đổi bất ngờ.'
+  },
+  // INTJ - Nhà kiến trúc sư
+  {
+    type: 'INTJ',
+    name: 'Nhà kiến trúc sư',
+    description: 'Chiến lược, độc lập, luôn có kế hoạch rõ ràng cho tương lai.',
+    note: 'Thích làm việc một mình, ít chia sẻ cảm xúc.',
+    trait_percentages: { E: 25, I: 75, S: 30, N: 70, T: 80, F: 20, J: 70, P: 30 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Tư duy chiến lược', description: 'Lập kế hoạch dài hạn tốt.', why_explanation: 'Nhìn xa trông rộng.' },
+      { title: 'Độc lập', description: 'Tự giải quyết vấn đề.', why_explanation: 'Tự tin vào năng lực bản thân.' }
+    ],
+    weaknesses: [
+      { title: 'Ít chia sẻ', description: 'Khó mở lòng với người khác.', why_explanation: 'Thiên về lý trí.', improvement_advice: 'Chủ động giao tiếp nhiều hơn.' }
+    ],
+    development_advice: ['Chia sẻ ý tưởng với đồng đội.', 'Lắng nghe phản hồi.'],
+    relationship_analysis: {
+      interaction_style: 'Trầm lặng, sâu sắc.',
+      improvement_tips: ['Chủ động kết nối.', 'Thể hiện cảm xúc nhiều hơn.']
+    },
+    career_guidance: {
+      suitable_fields: ['Khoa học', 'Công nghệ', 'Kỹ thuật'],
+      improvement_skills: ['Làm việc nhóm', 'Giao tiếp'],
+      career_matches: ['Nhà phân tích', 'Kỹ sư', 'Nhà nghiên cứu']
+    },
+    work_environment_preferred: 'Môi trường độc lập, có định hướng rõ ràng, khuyến khích sáng tạo.',
+    work_environment_avoid: 'Môi trường thiếu mục tiêu, nhiều xáo trộn, không tôn trọng ý tưởng mới.'
+  },
+  // INTP - Nhà tư duy
+  {
+    type: 'INTP',
+    name: 'Nhà tư duy',
+    description: 'Phân tích, tò mò, thích khám phá ý tưởng mới.',
+    note: 'Thường suy nghĩ sâu sắc, thích tự do sáng tạo.',
+    trait_percentages: { E: 20, I: 80, S: 35, N: 65, T: 85, F: 15, J: 35, P: 65 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Phân tích tốt', description: 'Hiểu vấn đề sâu sắc.', why_explanation: 'Tư duy logic mạnh.' },
+      { title: 'Sáng tạo', description: 'Đưa ra giải pháp mới.', why_explanation: 'Không ngại thử nghiệm.' }
+    ],
+    weaknesses: [
+      { title: 'Thiếu thực tế', description: 'Đôi khi xa rời thực tiễn.', why_explanation: 'Quá tập trung vào ý tưởng.', improvement_advice: 'Kết hợp lý thuyết với thực hành.' }
+    ],
+    development_advice: ['Chủ động thực hiện ý tưởng.', 'Học hỏi từ thực tế.'],
+    relationship_analysis: {
+      interaction_style: 'Dễ gần, thích chia sẻ kiến thức.',
+      improvement_tips: ['Lắng nghe cảm xúc người khác.', 'Chia sẻ suy nghĩ rõ ràng.']
+    },
+    career_guidance: {
+      suitable_fields: ['Công nghệ', 'Nghiên cứu', 'Giáo dục'],
+      improvement_skills: ['Kỹ năng thực hành', 'Giao tiếp'],
+      career_matches: ['Nhà phát triển phần mềm', 'Nhà nghiên cứu', 'Giảng viên']
+    },
+    work_environment_preferred: 'Môi trường tự do sáng tạo, khuyến khích nghiên cứu và thử nghiệm.',
+    work_environment_avoid: 'Môi trường gò bó, ít đổi mới, không khuyến khích ý tưởng.'
+  },
+  // ENTJ - Nhà chỉ huy
+  {
+    type: 'ENTJ',
+    name: 'Nhà chỉ huy',
+    description: 'Quyết đoán, lãnh đạo tốt, luôn hướng tới mục tiêu lớn.',
+    note: 'Thích kiểm soát, không ngại thử thách.',
+    trait_percentages: { E: 70, I: 30, S: 35, N: 65, T: 85, F: 15, J: 80, P: 20 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Lãnh đạo mạnh mẽ', description: 'Dẫn dắt đội nhóm hiệu quả.', why_explanation: 'Tư duy chiến lược.' },
+      { title: 'Quyết đoán', description: 'Dám đưa ra quyết định.', why_explanation: 'Tự tin và rõ ràng.' }
+    ],
+    weaknesses: [
+      { title: 'Khắt khe', description: 'Đôi khi quá cứng rắn.', why_explanation: 'Đặt mục tiêu cao.', improvement_advice: 'Lắng nghe ý kiến khác biệt.' }
+    ],
+    development_advice: ['Cân bằng giữa công việc và cuộc sống.', 'Thấu hiểu cảm xúc đồng đội.'],
+    relationship_analysis: {
+      interaction_style: 'Chủ động, truyền cảm hứng.',
+      improvement_tips: ['Kiên nhẫn với người khác.', 'Chia sẻ thành công cùng nhóm.']
+    },
+    career_guidance: {
+      suitable_fields: ['Quản lý', 'Kinh doanh', 'Chiến lược'],
+      improvement_skills: ['Lắng nghe', 'Quản lý cảm xúc'],
+      career_matches: ['Giám đốc', 'Trưởng nhóm', 'Nhà hoạch định chiến lược']
+    },
+    work_environment_preferred: 'Môi trường cạnh tranh, có mục tiêu lớn, đề cao vai trò lãnh đạo.',
+    work_environment_avoid: 'Môi trường thiếu định hướng, không rõ ràng về trách nhiệm.'
+  },
+  // ENFJ - Nhà lãnh đạo
+  {
+    type: 'ENFJ',
+    name: 'Nhà lãnh đạo',
+    description: 'Nhiệt tình, quan tâm đến người khác, giỏi truyền cảm hứng.',
+    note: 'Luôn muốn giúp đỡ và kết nối mọi người.',
+    trait_percentages: { E: 65, I: 35, S: 35, N: 65, T: 30, F: 70, J: 70, P: 30 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Truyền cảm hứng', description: 'Khích lệ người khác phát triển.', why_explanation: 'Quan tâm và lắng nghe.' },
+      { title: 'Giao tiếp tốt', description: 'Dễ tạo thiện cảm.', why_explanation: 'Thấu hiểu cảm xúc.' }
+    ],
+    weaknesses: [
+      { title: 'Dễ lo lắng', description: 'Quan tâm quá nhiều đến người khác.', why_explanation: 'Đặt lợi ích tập thể lên trên.', improvement_advice: 'Chú ý chăm sóc bản thân.' }
+    ],
+    development_advice: ['Cân bằng giữa cho đi và nhận lại.', 'Tự tin vào quyết định cá nhân.'],
+    relationship_analysis: {
+      interaction_style: 'Thân thiện, dễ gần.',
+      improvement_tips: ['Lắng nghe bản thân.', 'Chia sẻ cảm xúc thật.']
+    },
+    career_guidance: {
+      suitable_fields: ['Giáo dục', 'Tư vấn', 'Quản lý nhân sự'],
+      improvement_skills: ['Quản lý cảm xúc', 'Kỹ năng lãnh đạo'],
+      career_matches: ['Giáo viên', 'Tư vấn viên', 'Quản lý nhóm']
+    },
+    work_environment_preferred: 'Môi trường hợp tác, đề cao tinh thần đồng đội, nhiều cơ hội giúp đỡ người khác.',
+    work_environment_avoid: 'Môi trường cạnh tranh gay gắt, thiếu sự hỗ trợ lẫn nhau.'
+  },
+  // INFJ - Nhà vận động
+  {
+    type: 'INFJ',
+    name: 'Nhà vận động',
+    description: 'Sâu sắc, lý tưởng, luôn muốn giúp đỡ người khác.',
+    note: 'Có trực giác mạnh, sống vì giá trị cá nhân.',
+    trait_percentages: { E: 20, I: 80, S: 30, N: 70, T: 30, F: 70, J: 65, P: 35 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Đồng cảm', description: 'Hiểu cảm xúc người khác.', why_explanation: 'Trực giác và cảm xúc mạnh.' },
+      { title: 'Kiên định', description: 'Theo đuổi mục tiêu đến cùng.', why_explanation: 'Có lý tưởng sống rõ ràng.' }
+    ],
+    weaknesses: [
+      { title: 'Dễ căng thẳng', description: 'Lo nghĩ nhiều.', why_explanation: 'Nhạy cảm với môi trường.', improvement_advice: 'Thư giãn và chia sẻ nhiều hơn.' }
+    ],
+    development_advice: ['Chia sẻ cảm xúc với người thân.', 'Tìm kiếm sự hỗ trợ khi cần.'],
+    relationship_analysis: {
+      interaction_style: 'Chân thành, sâu sắc.',
+      improvement_tips: ['Chủ động giao tiếp.', 'Đặt ranh giới cá nhân.']
+    },
+    career_guidance: {
+      suitable_fields: ['Tư vấn', 'Giáo dục', 'Xã hội'],
+      improvement_skills: ['Kỹ năng giao tiếp', 'Quản lý cảm xúc'],
+      career_matches: ['Nhà tâm lý', 'Giáo viên', 'Nhà hoạt động xã hội']
+    },
+    work_environment_preferred: 'Môi trường yên tĩnh, nhân văn, khuyến khích phát triển cá nhân.',
+    work_environment_avoid: 'Môi trường áp lực cao, thiếu sự đồng cảm.'
+  },
+  // INFP - Nhà hòa giải
+  {
+    type: 'INFP',
+    name: 'Nhà hòa giải',
+    description: 'Nhạy cảm, sáng tạo, sống theo lý tưởng cá nhân.',
+    note: 'Luôn muốn tạo ra giá trị tích cực cho cuộc sống.',
+    trait_percentages: { E: 15, I: 85, S: 30, N: 70, T: 25, F: 75, J: 35, P: 65 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Sáng tạo', description: 'Có nhiều ý tưởng mới.', why_explanation: 'Tư duy mở và linh hoạt.' },
+      { title: 'Đồng cảm', description: 'Dễ chia sẻ cảm xúc.', why_explanation: 'Nhạy cảm với cảm xúc người khác.' }
+    ],
+    weaknesses: [
+      { title: 'Dễ tự ti', description: 'Đôi khi thiếu tự tin.', why_explanation: 'Quá nhạy cảm.', improvement_advice: 'Tập trung vào điểm mạnh bản thân.' }
+    ],
+    development_advice: ['Tự tin thể hiện ý kiến.', 'Chủ động giao tiếp.'],
+    relationship_analysis: {
+      interaction_style: 'Nhẹ nhàng, chân thành.',
+      improvement_tips: ['Chia sẻ cảm xúc nhiều hơn.', 'Lắng nghe ý kiến khác.']
+    },
+    career_guidance: {
+      suitable_fields: ['Nghệ thuật', 'Giáo dục', 'Tư vấn'],
+      improvement_skills: ['Kỹ năng giao tiếp', 'Tự tin thể hiện'],
+      career_matches: ['Nhà văn', 'Nhà thiết kế', 'Tư vấn viên']
+    },
+    work_environment_preferred: 'Môi trường sáng tạo, linh hoạt, tôn trọng giá trị cá nhân.',
+    work_environment_avoid: 'Môi trường cứng nhắc, thiếu sự thấu hiểu.'
+  },
+  // ISFJ - Nhà bảo vệ
+  {
+    type: 'ISFJ',
+    name: 'Nhà bảo vệ',
+    description: 'Tận tâm, chu đáo, luôn quan tâm đến người thân.',
+    note: 'Thích giúp đỡ, sống vì tập thể.',
+    trait_percentages: { E: 25, I: 75, S: 70, N: 30, T: 30, F: 70, J: 75, P: 25 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Tận tâm', description: 'Luôn giúp đỡ người khác.', why_explanation: 'Quan tâm đến tập thể.' },
+      { title: 'Kiên nhẫn', description: 'Chịu khó, bền bỉ.', why_explanation: 'Có trách nhiệm cao.' }
+    ],
+    weaknesses: [
+      { title: 'Ngại thay đổi', description: 'Khó thích nghi với cái mới.', why_explanation: 'Thích sự ổn định.', improvement_advice: 'Thử trải nghiệm điều mới.' }
+    ],
+    development_advice: ['Cởi mở với thay đổi.', 'Chia sẻ cảm xúc nhiều hơn.'],
+    relationship_analysis: {
+      interaction_style: 'Ân cần, chu đáo.',
+      improvement_tips: ['Chủ động giao tiếp.', 'Lắng nghe bản thân.']
+    },
+    career_guidance: {
+      suitable_fields: ['Y tế', 'Giáo dục', 'Hành chính'],
+      improvement_skills: ['Kỹ năng thích nghi', 'Giao tiếp'],
+      career_matches: ['Y tá', 'Giáo viên', 'Nhân viên hành chính']
+    },
+    work_environment_preferred: 'Môi trường ổn định, thân thiện, đề cao sự hỗ trợ lẫn nhau.',
+    work_environment_avoid: 'Môi trường thay đổi liên tục, thiếu sự quan tâm.'
+  },
+  // ISFP - Nhà phiêu lưu
+  {
+    type: 'ISFP',
+    name: 'Nhà phiêu lưu',
+    description: 'Tự do, linh hoạt, yêu thích trải nghiệm mới.',
+    note: 'Sống theo cảm xúc, thích khám phá.',
+    trait_percentages: { E: 30, I: 70, S: 65, N: 35, T: 25, F: 75, J: 30, P: 70 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Linh hoạt', description: 'Dễ thích nghi với hoàn cảnh.', why_explanation: 'Không ngại thay đổi.' },
+      { title: 'Sáng tạo', description: 'Có nhiều ý tưởng mới.', why_explanation: 'Tư duy mở.' }
+    ],
+    weaknesses: [
+      { title: 'Dễ chán', description: 'Khó kiên trì lâu dài.', why_explanation: 'Thích sự mới mẻ.', improvement_advice: 'Đặt mục tiêu rõ ràng.' }
+    ],
+    development_advice: ['Kiên trì với mục tiêu.', 'Chủ động lập kế hoạch.'],
+    relationship_analysis: {
+      interaction_style: 'Thân thiện, dễ gần.',
+      improvement_tips: ['Chia sẻ cảm xúc.', 'Lắng nghe ý kiến khác.']
+    },
+    career_guidance: {
+      suitable_fields: ['Nghệ thuật', 'Du lịch', 'Thiết kế'],
+      improvement_skills: ['Lập kế hoạch', 'Kỹ năng giao tiếp'],
+      career_matches: ['Nhà thiết kế', 'Hướng dẫn viên', 'Nhiếp ảnh gia']
+    },
+    work_environment_preferred: 'Môi trường linh hoạt, sáng tạo, nhiều trải nghiệm mới.',
+    work_environment_avoid: 'Môi trường gò bó, ít cơ hội thể hiện bản thân.'
+  },
+  // ESFJ - Nhà ngoại giao
+  {
+    type: 'ESFJ',
+    name: 'Nhà ngoại giao',
+    description: 'Hòa đồng, quan tâm đến người khác, thích giúp đỡ cộng đồng.',
+    note: 'Luôn muốn tạo môi trường hòa thuận.',
+    trait_percentages: { E: 70, I: 30, S: 65, N: 35, T: 30, F: 70, J: 70, P: 30 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Hòa đồng', description: 'Dễ kết bạn, thân thiện.', why_explanation: 'Quan tâm đến tập thể.' },
+      { title: 'Tận tâm', description: 'Luôn giúp đỡ người khác.', why_explanation: 'Sống vì cộng đồng.' }
+    ],
+    weaknesses: [
+      { title: 'Dễ lo lắng', description: 'Quan tâm quá nhiều đến ý kiến người khác.', why_explanation: 'Muốn làm hài lòng mọi người.', improvement_advice: 'Tự tin vào bản thân.' }
+    ],
+    development_advice: ['Chăm sóc bản thân nhiều hơn.', 'Tự tin thể hiện ý kiến.'],
+    relationship_analysis: {
+      interaction_style: 'Thân thiện, hòa nhã.',
+      improvement_tips: ['Lắng nghe bản thân.', 'Chia sẻ cảm xúc thật.']
+    },
+    career_guidance: {
+      suitable_fields: ['Giáo dục', 'Y tế', 'Dịch vụ khách hàng'],
+      improvement_skills: ['Kỹ năng giao tiếp', 'Quản lý cảm xúc'],
+      career_matches: ['Giáo viên', 'Điều dưỡng', 'Chăm sóc khách hàng']
+    },
+    work_environment_preferred: 'Môi trường thân thiện, hợp tác, nhiều hoạt động nhóm.',
+    work_environment_avoid: 'Môi trường cạnh tranh, thiếu sự hỗ trợ.'
+  },
+  // ESFP - Nhà giải trí
+  {
+    type: 'ESFP',
+    name: 'Nhà giải trí',
+    description: 'Năng động, vui vẻ, thích mang lại tiếng cười cho mọi người.',
+    note: 'Sống hết mình cho hiện tại.',
+    trait_percentages: { E: 80, I: 20, S: 70, N: 30, T: 25, F: 75, J: 30, P: 70 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Năng động', description: 'Luôn mang lại không khí vui vẻ.', why_explanation: 'Yêu thích hoạt động.' },
+      { title: 'Thích ứng nhanh', description: 'Dễ hòa nhập môi trường mới.', why_explanation: 'Linh hoạt, cởi mở.' }
+    ],
+    weaknesses: [
+      { title: 'Dễ xao nhãng', description: 'Khó tập trung lâu dài.', why_explanation: 'Thích sự mới mẻ.', improvement_advice: 'Lên kế hoạch rõ ràng.' }
+    ],
+    development_advice: ['Kiên trì với mục tiêu.', 'Chủ động lập kế hoạch.'],
+    relationship_analysis: {
+      interaction_style: 'Vui vẻ, hòa đồng.',
+      improvement_tips: ['Lắng nghe nhiều hơn.', 'Tôn trọng ý kiến khác biệt.']
+    },
+    career_guidance: {
+      suitable_fields: ['Nghệ thuật', 'Sự kiện', 'Du lịch'],
+      improvement_skills: ['Lập kế hoạch', 'Kỹ năng giao tiếp'],
+      career_matches: ['MC', 'Diễn viên', 'Hướng dẫn viên']
+    },
+    work_environment_preferred: 'Môi trường năng động, vui vẻ, nhiều cơ hội giao tiếp.',
+    work_environment_avoid: 'Môi trường đơn điệu, ít tương tác xã hội.'
+  },
+  // ISTJ - Nhà hậu cần
+  {
+    type: 'ISTJ',
+    name: 'Nhà hậu cần',
+    description: 'Ngăn nắp, trách nhiệm, luôn hoàn thành công việc đúng hạn.',
+    note: 'Đề cao sự ổn định và truyền thống.',
+    trait_percentages: { E: 20, I: 80, S: 75, N: 25, T: 70, F: 30, J: 80, P: 20 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Trách nhiệm', description: 'Luôn hoàn thành nhiệm vụ.', why_explanation: 'Tính kỷ luật cao.' },
+      { title: 'Ngăn nắp', description: 'Làm việc có hệ thống.', why_explanation: 'Thích sự rõ ràng.' }
+    ],
+    weaknesses: [
+      { title: 'Bảo thủ', description: 'Khó tiếp nhận cái mới.', why_explanation: 'Thích sự ổn định.', improvement_advice: 'Cởi mở với thay đổi.' }
+    ],
+    development_advice: ['Thử nghiệm điều mới.', 'Chia sẻ ý kiến với nhóm.'],
+    relationship_analysis: {
+      interaction_style: 'Điềm tĩnh, đáng tin cậy.',
+      improvement_tips: ['Chủ động giao tiếp.', 'Lắng nghe ý kiến khác.']
+    },
+    career_guidance: {
+      suitable_fields: ['Hành chính', 'Kế toán', 'Quản lý'],
+      improvement_skills: ['Kỹ năng mềm', 'Làm việc nhóm'],
+      career_matches: ['Nhân viên hành chính', 'Kế toán', 'Quản lý kho']
+    },
+    work_environment_preferred: 'Môi trường ổn định, có quy trình rõ ràng, đề cao trách nhiệm.',
+    work_environment_avoid: 'Môi trường hỗn loạn, thiếu quy tắc.'
+  },
+  // ISTP - Nhà kỹ thuật
+  {
+    type: 'ISTP',
+    name: 'Nhà kỹ thuật',
+    description: 'Thực tế, linh hoạt, thích tìm hiểu cách mọi thứ hoạt động.',
+    note: 'Ưa thích tự do, không thích bị kiểm soát.',
+    trait_percentages: { E: 30, I: 70, S: 70, N: 30, T: 75, F: 25, J: 35, P: 65 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Thực tế', description: 'Giải quyết vấn đề nhanh.', why_explanation: 'Tư duy logic, linh hoạt.' },
+      { title: 'Linh hoạt', description: 'Dễ thích nghi.', why_explanation: 'Không ngại thay đổi.' }
+    ],
+    weaknesses: [
+      { title: 'Ít kiên nhẫn', description: 'Dễ chán với việc lặp lại.', why_explanation: 'Thích sự mới mẻ.', improvement_advice: 'Kiên trì với mục tiêu.' }
+    ],
+    development_advice: ['Kiên nhẫn hơn.', 'Chủ động chia sẻ ý tưởng.'],
+    relationship_analysis: {
+      interaction_style: 'Thẳng thắn, thực tế.',
+      improvement_tips: ['Lắng nghe cảm xúc.', 'Chia sẻ nhiều hơn.']
+    },
+    career_guidance: {
+      suitable_fields: ['Kỹ thuật', 'Công nghệ', 'Cơ khí'],
+      improvement_skills: ['Làm việc nhóm', 'Kỹ năng giao tiếp'],
+      career_matches: ['Kỹ sư', 'Thợ máy', 'Nhà phát triển sản phẩm']
+    },
+    work_environment_preferred: 'Môi trường thực tế, tự do thử nghiệm, ít bị kiểm soát.',
+    work_environment_avoid: 'Môi trường quá nhiều quy định, thiếu thực tiễn.'
+  },
+  // ESTP - Nhà khởi nghiệp
+  {
+    type: 'ESTP',
+    name: 'Nhà khởi nghiệp',
+    description: 'Năng động, quyết đoán, thích thử thách và hành động.',
+    note: 'Luôn tìm kiếm cơ hội mới.',
+    trait_percentages: { E: 75, I: 25, S: 70, N: 30, T: 70, F: 30, J: 35, P: 65 },
+    dimensions: [
+      {
+        dimension: 'EI', dimension_name_vi: 'Xu hướng liên quan đến Năng lượng',
+        trait_a: { id: 'E', name_en: 'Extraversion', name_vi: 'Hướng ngoại', description: 'Năng lượng hướng ngoại', keywords: ['Năng động'], examples: ['Giao tiếp'], dimension_type: 'EI' },
+        trait_b: { id: 'I', name_en: 'Introversion', name_vi: 'Hướng nội', description: 'Năng lượng hướng nội', keywords: ['Trầm lặng'], examples: ['Suy nghĩ'], dimension_type: 'EI' }
+      },
+      {
+        dimension: 'SN', dimension_name_vi: 'Xu hướng liên quan đến Thu nhận thông tin',
+        trait_a: { id: 'S', name_en: 'Sensing', name_vi: 'Cảm giác', description: 'Thu nhận qua giác quan', keywords: ['Thực tế'], examples: ['Chi tiết'], dimension_type: 'SN' },
+        trait_b: { id: 'N', name_en: 'Intuition', name_vi: 'Trực giác', description: 'Thu nhận qua trực giác', keywords: ['Sáng tạo'], examples: ['Ý tưởng'], dimension_type: 'SN' }
+      },
+      {
+        dimension: 'TF', dimension_name_vi: 'Xu hướng liên quan đến Ra quyết định',
+        trait_a: { id: 'T', name_en: 'Thinking', name_vi: 'Tư duy', description: 'Quyết định bằng logic', keywords: ['Logic'], examples: ['Phân tích'], dimension_type: 'TF' },
+        trait_b: { id: 'F', name_en: 'Feeling', name_vi: 'Cảm xúc', description: 'Quyết định bằng cảm xúc', keywords: ['Đồng cảm'], examples: ['Quan tâm'], dimension_type: 'TF' }
+      },
+      {
+        dimension: 'JP', dimension_name_vi: 'Xu hướng liên quan đến Nguyên tắc sống',
+        trait_a: { id: 'J', name_en: 'Judging', name_vi: 'Phán đoán', description: 'Thích kế hoạch', keywords: ['Tổ chức'], examples: ['Kế hoạch'], dimension_type: 'JP' },
+        trait_b: { id: 'P', name_en: 'Perceiving', name_vi: 'Nhận thức', description: 'Thích linh hoạt', keywords: ['Linh hoạt'], examples: ['Tự phát'], dimension_type: 'JP' }
+      }
+    ],
+    strengths: [
+      { title: 'Quyết đoán', description: 'Dám nghĩ dám làm.', why_explanation: 'Tự tin, năng động.' },
+      { title: 'Thích ứng nhanh', description: 'Xử lý tình huống tốt.', why_explanation: 'Linh hoạt, thực tế.' }
+    ],
+    weaknesses: [
+      { title: 'Nóng vội', description: 'Đôi khi thiếu kiên nhẫn.', why_explanation: 'Thích hành động nhanh.', improvement_advice: 'Cân nhắc kỹ trước khi quyết định.' }
+    ],
+    development_advice: ['Kiên nhẫn hơn.', 'Lắng nghe ý kiến nhóm.'],
+    relationship_analysis: {
+      interaction_style: 'Nhiệt tình, chủ động.',
+      improvement_tips: ['Kiểm soát cảm xúc.', 'Tôn trọng ý kiến khác biệt.']
+    },
+    career_guidance: {
+      suitable_fields: ['Kinh doanh', 'Bán hàng', 'Sự kiện'],
+      improvement_skills: ['Lập kế hoạch', 'Kỹ năng giao tiếp'],
+      career_matches: ['Doanh nhân', 'Nhân viên kinh doanh', 'Tổ chức sự kiện']
+    },
+    work_environment_preferred: 'Môi trường năng động, nhiều thử thách, đề cao hành động.',
+    work_environment_avoid: 'Môi trường nhàm chán, ít cơ hội thể hiện bản thân.'
   }
 ];
 
@@ -395,7 +1037,9 @@ mbtiTypes.forEach(type => {
       suitable_fields: ['Lĩnh vực phù hợp với tính cách', 'Công việc phát huy điểm mạnh'],
       improvement_skills: ['Kỹ năng cần thiết cho nghề nghiệp', 'Phát triển năng lực chuyên môn'],
       career_matches: [`Nghề nghiệp phù hợp với ${typeNames[type]}`]
-    }
+    },
+    work_environment_preferred: 'Môi trường phù hợp với tính cách này: linh hoạt, tôn trọng cá nhân, có cơ hội phát triển bản thân.',
+    work_environment_avoid: 'Môi trường không phù hợp: quá cứng nhắc, thiếu sáng tạo, không tôn trọng ý kiến cá nhân.'
   });
 });
 

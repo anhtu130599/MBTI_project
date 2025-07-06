@@ -1,12 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Typography, Box, Paper, Alert } from '@mui/material';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { LoginForm } from '@/features/auth/components/LoginForm';
+import { useSearchParams } from 'next/navigation';
 
 export const LoginPage: React.FC = () => {
   const { login, isLoading, error } = useAuth();
+  const searchParams = useSearchParams();
+
+  // Lưu redirect parameter vào sessionStorage khi component mount
+  useEffect(() => {
+    const redirect = searchParams.get('redirect');
+    if (redirect) {
+      sessionStorage.setItem('returnUrl', redirect);
+      console.log('🔗 Saved redirect URL to sessionStorage:', redirect);
+    }
+  }, [searchParams]);
 
   const handleLogin = async (data: { username: string; password: string }) => {
     try {

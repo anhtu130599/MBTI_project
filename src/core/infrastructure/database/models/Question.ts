@@ -10,6 +10,8 @@ const QuestionSchema = new Schema<QuestionDocument>({
     type: String,
     required: true,
     trim: true,
+    unique: true,
+    index: true,
   },
   options: [{
     id: {

@@ -1,7 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Question from '@/core/infrastructure/database/models/Question';
+import Question from '@/models/Question';
 import { verifyAdminAuth } from '@/shared/utils/auth';
+
+interface OptionInput {
+  text: string;
+  value: string;
+}
 
 export async function GET() {
   await dbConnect();
@@ -28,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Transform options to match the schema
     const transformedData = {
       ...data,
-      options: data.options.map((option: any, index: number) => ({
+      options: data.options.map((option: OptionInput, index: number) => ({
         id: `option_${index + 1}`,
         text: option.text,
         value: option.value
@@ -45,6 +50,17 @@ export async function POST(request: NextRequest) {
       if (!option.text || !option.value) {
         return NextResponse.json({ error: 'Vui lòng nhập đầy đủ nội dung và giá trị cho tất cả đáp án' }, { status: 400 });
       }
+    }
+
+    // Check for duplicate question
+    const existingQuestion = await Question.findOne({ 
+      text: { $regex: new RegExp(`^${transformedData.text.trim()}$`, 'i') }
+    });
+    
+    if (existingQuestion) {
+      return NextResponse.json({ 
+        error: 'Câu hỏi này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại hoặc sử dụng câu hỏi khác.' 
+      }, { status: 409 });
     }
 
     const question = await Question.create(transformedData);
@@ -74,7 +90,7 @@ export async function PUT(request: NextRequest) {
     // Transform options to match the schema
     const transformedData = {
       ...updateData,
-      options: updateData.options.map((option: any, index: number) => ({
+      options: updateData.options.map((option: OptionInput, index: number) => ({
         id: `option_${index + 1}`,
         text: option.text,
         value: option.value

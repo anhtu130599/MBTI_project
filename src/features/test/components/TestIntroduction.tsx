@@ -53,7 +53,26 @@ export const TestIntroduction: React.FC = () => {
     fetchStats();
   }, []);
 
-  const handleStartTest = () => {
+  const handleStartTest = async () => {
+    // Kiểm tra trạng thái đăng nhập trước khi bắt đầu test
+    try {
+      const response = await fetch('/api/auth/me');
+      const isLoggedIn = response.ok;
+      
+      // Lưu trạng thái đăng nhập vào sessionStorage
+      if (isLoggedIn) {
+        sessionStorage.setItem('wasGuestUser', 'false');
+        console.log('🔑 User is logged in, will require manual save');
+      } else {
+        sessionStorage.setItem('wasGuestUser', 'true');
+        console.log('👤 User is guest, will auto-save after login');
+      }
+    } catch {
+      // Nếu không thể kiểm tra, mặc định là guest user
+      sessionStorage.setItem('wasGuestUser', 'true');
+      console.log('👤 Cannot check auth status, defaulting to guest user');
+    }
+    
     router.push('/test/questions');
   };
 

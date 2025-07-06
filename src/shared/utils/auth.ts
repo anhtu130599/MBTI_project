@@ -3,6 +3,12 @@ import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
+interface UserJWTPayload {
+  userId: string;
+  username: string;
+  role: string;
+}
+
 export const getAuthHeaders = async () => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
@@ -24,7 +30,7 @@ export async function verifyAdminAuth(request: NextRequest) {
 
   try {
     const payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    const userData = payload.payload as any;
+    const userData = payload.payload as unknown as UserJWTPayload;
     
     if (!userData.userId) {
       console.log('verifyAdminAuth: No userId in payload');
@@ -59,7 +65,7 @@ export async function verifyUserAuth(request: NextRequest) {
 
   try {
     const payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    const userData = payload.payload as any;
+    const userData = payload.payload as unknown as UserJWTPayload;
     
     if (!userData.userId) {
       return { success: false, error: 'Invalid token', status: 401 };

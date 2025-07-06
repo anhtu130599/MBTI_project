@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/mongodb';
-import PersonalityType from '@/core/infrastructure/database/models/PersonalityType';
+import PersonalityDetailInfo from '@/models/PersonalityDetailInfo';
 import { ApiResponseUtil } from '@/shared/utils/apiResponse';
 
 export async function GET(
@@ -10,7 +10,7 @@ export async function GET(
     await dbConnect();
     
     // Lấy thông tin từ database trước
-    const personalityType = await PersonalityType.findOne({ type: params.typeId }).lean();
+    const personalityType = await PersonalityDetailInfo.findOne({ type: params.typeId }).lean();
     
     if (!personalityType) {
       return ApiResponseUtil.notFound(`Personality type '${params.typeId}' not found`);

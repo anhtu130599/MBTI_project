@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     console.log('Admin authenticated in /admin/careers:', authResult.username);
 
     await dbConnect();
-    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
+    const Career = (await import('@/models/Career')).default;
     const careers = await Career.find().sort({ title: 1 });
     
     console.log('Found careers:', careers.length);
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
     await dbConnect();
-    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
+    const Career = (await import('@/models/Career')).default;
     const career = new Career(data);
     await career.save();
     return NextResponse.json(career);

@@ -19,9 +19,9 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const User = (await import('@/models/User')).default;
-    const Question = (await import('@/core/infrastructure/database/models/Question')).default;
-    const PersonalityType = (await import('@/core/infrastructure/database/models/PersonalityType')).default;
-    const Career = (await import('@/core/infrastructure/database/models/Career')).default;
+    const Question = (await import('@/models/Question')).default;
+    const PersonalityDetailInfo = (await import('@/models/PersonalityDetailInfo')).default;
+    const Career = (await import('@/models/Career')).default;
 
     // Get current date for recent stats
     const thirtyDaysAgo = new Date();
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       User.countDocuments(),
       Question.countDocuments({}),
-      PersonalityType.countDocuments(),
+      PersonalityDetailInfo.countDocuments(),
       Career.countDocuments(),
       User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
       User.countDocuments({ createdAt: { $lt: thirtyDaysAgo } })

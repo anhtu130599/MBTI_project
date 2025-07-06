@@ -6,35 +6,30 @@ import {
   Container,
   Typography,
   Box,
-  Card,
-  CardContent,
+  Paper,
   Grid,
   Chip,
-  LinearProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Divider,
-  Alert,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Button,
-  Stack,
-  Paper,
+  Divider,
   CircularProgress,
+  Alert,
+  LinearProgress,
+  Stack,
 } from '@mui/material';
 import {
-  ExpandMore,
+  CheckCircleOutline,
+  HighlightOff,
   Psychology,
-  TrendingUp,
   Work,
-  Group,
-  Star,
-  Warning,
-  Lightbulb,
-  Celebration,
+  TrendingUp,
   School,
-  CheckCircle,
   Save,
-  // Login, // Not used
 } from '@mui/icons-material';
 import { PersonalityDetailInfo } from '@/core/domain/entities/MBTIDimensionInfo';
 import { getCareerGuidance } from '@/shared/data/careerGuidanceData';
@@ -44,9 +39,18 @@ interface ExtendedPersonalityInfo extends PersonalityDetailInfo {
     id: string;
     title: string;
     description: string;
-    salary_range?: string;
-    requirements?: string[];
-    location_type?: string;
+    industry: string;
+    salaryRange: {
+      min: number;
+      max: number;
+      currency: string;
+    };
+    requiredSkills: string[];
+    educationLevel: string;
+    experienceLevel: string;
+    workEnvironment: string;
+    location: string;
+    jobOutlook: string;
   }>;
   actual_percentages?: {
     E: number; I: number; S: number; N: number;
@@ -60,6 +64,37 @@ interface ExtendedPersonalityInfo extends PersonalityDetailInfo {
   isLoggedIn?: boolean;
 }
 
+interface TestResultData {
+  personality: {
+    type: string;
+    name: string;
+    description: string;
+    strengths: Array<{
+      title: string;
+      description: string;
+      why_explanation: string;
+    }>;
+    weaknesses: Array<{
+      title: string;
+      description: string;
+      why_explanation: string;
+      improvement_advice: string;
+    }>;
+    development_advice: string[];
+    career_guidance: {
+      suitable_fields: string[];
+      improvement_skills: string[];
+      career_matches: string[];
+    };
+  };
+  careers: Array<{
+    _id: string;
+    title: string;
+    description: string;
+    industry: string;
+  }>;
+}
+
 function TestResultContent() {
   const searchParams = useSearchParams();
   const [result, setResult] = useState<ExtendedPersonalityInfo | null>(null);
@@ -68,13 +103,100 @@ function TestResultContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [autoSaved, setAutoSaved] = useState(false);
+  const [hasAutoSaved, setHasAutoSaved] = useState(false);
+  const [isAlreadySaved, setIsAlreadySaved] = useState(false);
+  const fromHistory = searchParams.get('fromHistory') === '1';
 
   useEffect(() => {
     const type = searchParams.get('type');
     if (type) {
       fetchPersonalityResult(type);
     }
+    
+    // Kiểm tra và đảm bảo trạng thái wasGuestUser được set đúng
+    const wasGuestUser = sessionStorage.getItem('wasGuestUser');
+    if (wasGuestUser === null) {
+      // Nếu chưa có trạng thái, kiểm tra auth status hiện tại
+      checkAuthStatus().then(() => {
+        const isCurrentlyLoggedIn = sessionStorage.getItem('wasGuestUser') === 'false';
+        if (isCurrentlyLoggedIn) {
+          console.log('🔑 User is logged in, ensuring no auto-save');
+        } else {
+          console.log('👤 User is guest, auto-save enabled');
+        }
+      });
+    }
   }, [searchParams]);
+
+  // Kiểm tra xem kết quả này đã được lưu trong database chưa
+  useEffect(() => {
+    const checkIfAlreadySaved = async () => {
+      if (!isLoggedIn || !result?.type) return;
+      
+      try {
+        const response = await fetch('/api/users/test-history');
+        if (response.ok) {
+          const history = await response.json();
+          
+          // Lấy timestamp từ localStorage để so sánh
+          const savedTestData = localStorage.getItem('last_test_result');
+          let testTimestamp = null;
+          if (savedTestData) {
+            try {
+              const parsed = JSON.parse(savedTestData);
+              testTimestamp = parsed.timestamp;
+                    } catch {
+          console.log('No timestamp in localStorage');
+        }
+          }
+          
+          // So sánh dựa trên type và timestamp (nếu có)
+          const isSaved = history.some((item: { personalityType: string; createdAt?: string; percentages?: unknown }) => {
+            if (item.personalityType !== result.type) return false;
+            
+            // Nếu có timestamp, so sánh timestamp
+            if (testTimestamp && item.createdAt) {
+              const itemDate = new Date(item.createdAt);
+              const testDate = new Date(testTimestamp);
+              const timeDiff = Math.abs(itemDate.getTime() - testDate.getTime());
+              // Cho phép sai lệch 5 phút
+              return timeDiff < 5 * 60 * 1000;
+            }
+            
+            // Nếu không có timestamp, so sánh percentages
+            if (item.percentages && result.actual_percentages) {
+              return JSON.stringify(item.percentages) === JSON.stringify(result.actual_percentages);
+            }
+            
+            return false;
+          });
+          
+          if (isSaved) {
+            console.log('✅ This result is already saved in database');
+            setIsAlreadySaved(true);
+            setSaveSuccess(true); // Hiển thị trạng thái đã lưu
+          } else {
+            console.log('❌ This result is not saved yet');
+            setIsAlreadySaved(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking if result is saved:', error);
+      }
+    };
+
+    checkIfAlreadySaved();
+  }, [isLoggedIn, result]);
+
+  // Kiểm tra xem đây có phải là kết quả từ lịch sử không (không có actual_percentages)
+  useEffect(() => {
+    if (isLoggedIn && result?.type && !result?.actual_percentages) {
+      console.log('📚 This appears to be a result from history (no actual_percentages)');
+      setIsAlreadySaved(true);
+      setSaveSuccess(true);
+    }
+  }, [isLoggedIn, result]);
 
   const fetchPersonalityResult = async (type: string) => {
     try {
@@ -82,7 +204,7 @@ function TestResultContent() {
       if (!response.ok) {
         throw new Error('Failed to fetch result');
       }
-      const data = await response.json();
+      const data: { success: boolean; data: TestResultData } = await response.json();
       
       // 🎯 LẤY DỮ LIỆU THỰC TẾ TỪ LOCALSTORAGE
       let actualData = null;
@@ -103,12 +225,37 @@ function TestResultContent() {
       }
       
       setResult({
-        ...data.data,
+        ...data.data.personality,
+        available_careers: (data.data.careers || []).map((career: {
+          _id: string;
+          title: string;
+          description: string;
+          industry?: string;
+          salaryRange?: { min: number; max: number; currency: string };
+          requiredSkills?: string[];
+          educationLevel?: string;
+          experienceLevel?: string;
+          workEnvironment?: string;
+          location?: string;
+          jobOutlook?: string;
+        }) => ({
+          id: career._id,
+          title: career.title,
+          description: career.description,
+          industry: career.industry || '',
+          salaryRange: career.salaryRange || { min: 0, max: 0, currency: 'VND' },
+          requiredSkills: career.requiredSkills || [],
+          educationLevel: career.educationLevel || '',
+          experienceLevel: career.experienceLevel || '',
+          workEnvironment: career.workEnvironment || '',
+          location: career.location || '',
+          jobOutlook: career.jobOutlook || ''
+        })),
         actual_percentages: actualData?.percentages,
         actual_scores: actualData?.scores,
         total_questions: actualData?.total_questions,
         isLoggedIn: actualData?.isLoggedIn
-      });
+      } as ExtendedPersonalityInfo);
     } catch (err) {
       setError('Không thể tải kết quả. Vui lòng thử lại sau.');
       console.error('Error fetching result:', err);
@@ -119,20 +266,82 @@ function TestResultContent() {
 
   useEffect(() => {
     // Check if user is logged in
-    checkAuthStatus();
+    const initializeAuth = async () => {
+      await checkAuthStatus();
+    };
+    initializeAuth();
   }, []);
+
+  // Effect để tự động lưu kết quả sau khi đăng nhập thành công (chỉ khi user chưa đăng nhập trước đó)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      // Kiểm tra xem có phải vừa đăng nhập thành công và trước đó chưa đăng nhập không
+      const wasLoggedOut = sessionStorage.getItem('wasLoggedOut');
+      const wasGuestUser = sessionStorage.getItem('wasGuestUser');
+      
+      if (wasLoggedOut === 'true' && wasGuestUser === 'true' && isLoggedIn && result?.actual_percentages && !hasAutoSaved) {
+        console.log('🔄 Guest user just logged in, auto-saving test result...');
+        sessionStorage.removeItem('wasLoggedOut');
+        sessionStorage.removeItem('wasGuestUser');
+        setAutoSaved(true);
+        setHasAutoSaved(true);
+        // Tự động lưu kết quả sau 1 giây để đảm bảo state đã cập nhật
+        setTimeout(() => {
+          saveToHistory();
+        }, 1000);
+      }
+    };
+
+    // Lắng nghe sự thay đổi trong sessionStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Kiểm tra ngay lập tức
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [isLoggedIn, result]);
+
+  // Reset auto-save state sau 5 giây
+  useEffect(() => {
+    if (autoSaved) {
+      const timer = setTimeout(() => {
+        setAutoSaved(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [autoSaved]);
 
   const checkAuthStatus = async () => {
     try {
       const response = await fetch('/api/auth/me');
+      const wasLoggedIn = isLoggedIn;
       setIsLoggedIn(response.ok);
+      
+      // Cập nhật trạng thái wasGuestUser dựa trên auth status hiện tại
+      if (response.ok) {
+        sessionStorage.setItem('wasGuestUser', 'false');
+      } else {
+        sessionStorage.setItem('wasGuestUser', 'true');
+      }
+      
+      // Nếu trước đó chưa đăng nhập và bây giờ đã đăng nhập
+      if (!wasLoggedIn && response.ok) {
+        console.log('🔄 User just logged in, checking for auto-save...');
+        // Đánh dấu rằng user vừa đăng nhập
+        sessionStorage.setItem('wasLoggedOut', 'true');
+      }
     } catch {
       setIsLoggedIn(false);
+      sessionStorage.setItem('wasGuestUser', 'true');
     }
   };
 
   const saveToHistory = async () => {
     if (!isLoggedIn) {
+      // Đánh dấu rằng user này là guest user (chưa đăng nhập)
+      sessionStorage.setItem('wasGuestUser', 'true');
       // Chuyển hướng đến trang đăng nhập
       window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
       return;
@@ -140,6 +349,12 @@ function TestResultContent() {
 
     if (!result?.actual_percentages || !result?.actual_scores) {
       alert('Không có dữ liệu test thực tế để lưu. Vui lòng làm lại bài test.');
+      return;
+    }
+
+    // Kiểm tra xem đã lưu thành công chưa để tránh lặp lại
+    if (saveSuccess) {
+      console.log('✅ Result already saved successfully');
       return;
     }
 
@@ -151,6 +366,8 @@ function TestResultContent() {
       if (!testData.type) {
         throw new Error('Không tìm thấy dữ liệu test');
       }
+
+      console.log('💾 Saving test result to history...', testData.type);
 
       // Gọi API để lưu kết quả
       const response = await fetch('/api/test/save-result', {
@@ -168,7 +385,11 @@ function TestResultContent() {
 
       if (response.ok) {
         setSaveSuccess(true);
-        alert(data.message || 'Kết quả đã được lưu thành công!');
+        console.log('✅ Test result saved successfully');
+        // Không hiển thị alert nếu đây là auto-save sau đăng nhập
+        if (!autoSaved) {
+          alert(data.message || 'Kết quả đã được lưu thành công!');
+        }
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
         if (data.requireLogin) {
@@ -232,7 +453,7 @@ function TestResultContent() {
       {/* Congratulations Section */}
       <Card sx={{ mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
         <CardContent sx={{ textAlign: 'center', py: 6 }}>
-          <Celebration sx={{ fontSize: 60, mb: 2 }} />
+          <CheckCircleOutline sx={{ fontSize: 60, mb: 2 }} />
           <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
             Chúc mừng!
           </Typography>
@@ -283,7 +504,7 @@ function TestResultContent() {
             </Box>
             {result.actual_percentages && (
               <Chip 
-                icon={<CheckCircle />}
+                icon={<CheckCircleOutline />}
                 label={`Dựa trên ${result.total_questions || 0} câu trả lời của bạn`}
                 color="success"
                 size="small"
@@ -400,157 +621,129 @@ function TestResultContent() {
         </CardContent>
       </Card>
 
-      {/* Strengths & Weaknesses */}
+      {/* Career Guidance Section */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom fontWeight="bold">
-            Điểm mạnh và điểm yếu
-          </Typography>
-          
-          {/* Strengths */}
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <Box display="flex" alignItems="center">
-                <Star sx={{ mr: 1, color: 'success.main' }} />
-                <Typography variant="h6" fontWeight="bold">
-                  Điểm mạnh ({result.strengths.length})
-                </Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
-                {result.strengths.map((strength, index) => (
-                  <Grid item xs={12} key={index}>
-                    <Paper elevation={1} sx={{ p: 3 }}>
-                      <Typography variant="h6" color="success.main" gutterBottom>
-                        {strength.title}
-                      </Typography>
-                      <Typography variant="body1" paragraph>
-                        {strength.description}
-                      </Typography>
-                      <Alert severity="info" sx={{ mt: 2 }}>
-                        <Typography variant="body2">
-                          <strong>Tại sao bạn có điểm mạnh này:</strong> {strength.why_explanation}
-                        </Typography>
-                      </Alert>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Weaknesses */}
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <Box display="flex" alignItems="center">
-                <Warning sx={{ mr: 1, color: 'warning.main' }} />
-                <Typography variant="h6" fontWeight="bold">
-                  Điểm yếu ({result.weaknesses.length})
-                </Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
-                {result.weaknesses.map((weakness, index) => (
-                  <Grid item xs={12} key={index}>
-                    <Paper elevation={1} sx={{ p: 3 }}>
-                      <Typography variant="h6" color="warning.main" gutterBottom>
-                        {weakness.title}
-                      </Typography>
-                      <Typography variant="body1" paragraph>
-                        {weakness.description}
-                      </Typography>
-                      <Alert severity="warning" sx={{ mb: 2 }}>
-                        <Typography variant="body2">
-                          <strong>Tại sao bạn có điểm yếu này:</strong> {weakness.why_explanation}
-                        </Typography>
-                      </Alert>
-                      <Alert severity="success">
-                        <Typography variant="body2">
-                          <strong>Lời khuyên cải thiện:</strong> {weakness.improvement_advice}
-                        </Typography>
-                      </Alert>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-        </CardContent>
-      </Card>
-
-      {/* Development Advice */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Box display="flex" alignItems="center" mb={3}>
-            <Lightbulb sx={{ mr: 2, color: 'primary.main' }} />
-            <Typography variant="h5" fontWeight="bold">
-              Lời khuyên phát triển
-            </Typography>
-          </Box>
-          <Grid container spacing={2}>
-            {result.development_advice.map((advice, index) => (
-              <Grid item xs={12} sm={6} key={index}>
-                <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-                  <Typography variant="body1">
-                    {advice}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* Relationship Analysis */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Box display="flex" alignItems="center" mb={3}>
-            <Group sx={{ mr: 2, color: 'primary.main' }} />
-            <Typography variant="h5" fontWeight="bold">
-              Phân tích mối quan hệ
-            </Typography>
-          </Box>
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary">
-              Cách tương tác với người khác
-            </Typography>
-            <Typography variant="body1" paragraph>
-              {result.relationship_analysis.interaction_style}
-            </Typography>
-          </Paper>
-          
-          <Typography variant="h6" gutterBottom>
-            Lời khuyên cải thiện mối quan hệ
-          </Typography>
-          <Grid container spacing={2}>
-            {result.relationship_analysis.improvement_tips.map((tip, index) => (
-              <Grid item xs={12} sm={6} key={index}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <Typography variant="body2">
-                    • {tip}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* Enhanced Career Guidance */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Box display="flex" alignItems="center" mb={3}>
+          <Box display="flex" alignItems="center" mb={2}>
             <Work sx={{ mr: 2, color: 'primary.main' }} />
             <Typography variant="h5" fontWeight="bold">
               Định hướng nghề nghiệp chi tiết
             </Typography>
           </Box>
-          
+
+          {/* Block ngành nghề phù hợp từ database - UI đẹp hơn */}
+          {result.available_careers && result.available_careers.length > 0 && (
+            <Box mb={4}>
+              <Typography variant="h6" color="primary.main" gutterBottom>
+                Ngành nghề phù hợp
+              </Typography>
+              <Grid container spacing={3}>
+                {result.available_careers.map((career) => (
+                  <Grid item xs={12} md={6} key={career.id}>
+                    <Paper elevation={3} sx={{ p: 3, mb: 2, borderLeft: '5px solid #1976d2', height: '100%' }}>
+                      <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        {career.title}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 1 }}>{career.description}</Typography>
+                      <Typography variant="body2"><b>Ngành:</b> {career.industry}</Typography>
+                      <Typography variant="body2"><b>Mức lương:</b> {career.salaryRange.min.toLocaleString()} - {career.salaryRange.max.toLocaleString()} {career.salaryRange.currency}</Typography>
+                      <Typography variant="body2"><b>Môi trường:</b> {career.workEnvironment}</Typography>
+                      <Typography variant="body2"><b>Triển vọng:</b> {career.jobOutlook}</Typography>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+
+          {/* Block Điểm mạnh, Điểm yếu, Lời khuyên phát triển, Phân tích mối quan hệ */}
+          {(() => {
+            // Ưu tiên lấy từ API (result), fallback sang file tĩnh nếu không có
+            const careerDetails = getCareerGuidance(result.type);
+            const strengths = result?.strengths && result.strengths.length > 0
+              ? result.strengths.map(s => (typeof s === 'string' ? s : (s.title ? `${s.title}: ${s.description}` : s.description)))
+              : (careerDetails?.keyStrengths || []);
+            const weaknesses = result?.weaknesses && result.weaknesses.length > 0
+              ? result.weaknesses.map(s => (typeof s === 'string' ? s : (s.title ? `${s.title}: ${s.description}` : s.description)))
+              : (careerDetails?.developmentAreas || []);
+            const developmentAdvice = result?.development_advice && result.development_advice.length > 0
+              ? result.development_advice
+              : (careerDetails?.careerTips || []);
+            if (strengths.length === 0 && weaknesses.length === 0 && developmentAdvice.length === 0) return null;
+            return (
+              <Box mb={4}>
+                <Grid container spacing={3}>
+                  {/* Điểm mạnh */}
+                  <Grid item xs={12} md={6}>
+                    <Card sx={{ height: '100%' }}>
+                      <CardContent>
+                        <Box display="flex" alignItems="center" mb={1}>
+                          <CheckCircleOutline sx={{ color: 'success.main', mr: 1 }} />
+                          <Typography variant="h6" fontWeight="bold">Điểm mạnh</Typography>
+                        </Box>
+                        <List>
+                          {strengths.map((s, i) => (
+                            <ListItem key={i}>
+                              <ListItemIcon>
+                                <CheckCircleOutline />
+                              </ListItemIcon>
+                              <ListItemText primary={<Typography variant="body2">{s}</Typography>} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  {/* Điểm yếu */}
+                  <Grid item xs={12} md={6}>
+                    <Card sx={{ height: '100%' }}>
+                      <CardContent>
+                        <Box display="flex" alignItems="center" mb={1}>
+                          <HighlightOff sx={{ color: 'error.main', mr: 1 }} />
+                          <Typography variant="h6" fontWeight="bold">Điểm yếu</Typography>
+                        </Box>
+                        <List>
+                          {weaknesses.map((s, i) => (
+                            <ListItem key={i}>
+                              <ListItemIcon>
+                                <HighlightOff />
+                              </ListItemIcon>
+                              <ListItemText primary={<Typography variant="body2">{s}</Typography>} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  {/* Lời khuyên phát triển */}
+                  <Grid item xs={12} md={6}>
+                    <Card sx={{ height: '100%' }}>
+                      <CardContent>
+                        <Box display="flex" alignItems="center" mb={1}>
+                          <Psychology sx={{ color: 'warning.main', mr: 1 }} />
+                          <Typography variant="h6" fontWeight="bold">Lời khuyên phát triển</Typography>
+                        </Box>
+                        <List>
+                          {developmentAdvice.map((s, i) => (
+                            <ListItem key={i}>
+                              <ListItemIcon>
+                                <Psychology />
+                              </ListItemIcon>
+                              <ListItemText primary={<Typography variant="body2">{s}</Typography>} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </Box>
+            );
+          })()}
+
+          {/* Luôn luôn hiển thị block tĩnh bên dưới */}
           {(() => {
             const careerDetails = getCareerGuidance(result.type);
-            
             if (!careerDetails) {
               // Fallback to original career guidance if detailed data not available
               return (
@@ -559,16 +752,15 @@ function TestResultContent() {
                     Nhóm ngành nghề phù hợp
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 3 }}>
-                    {result.career_guidance.suitable_fields.map((field, index) => (
+                    {result.career_guidance?.suitable_fields?.map((field, index) => (
                       <Chip key={index} label={field} color="primary" />
                     ))}
                   </Stack>
-                  
                   <Typography variant="h6" gutterBottom>
                     Kỹ năng cần cải thiện
                   </Typography>
                   <Grid container spacing={2}>
-                    {result.career_guidance.improvement_skills.map((skill, index) => (
+                    {result.career_guidance?.improvement_skills?.map((skill, index) => (
                       <Grid item xs={12} sm={6} key={index}>
                         <Paper elevation={1} sx={{ p: 2 }}>
                           <Typography variant="body2">• {skill}</Typography>
@@ -579,7 +771,7 @@ function TestResultContent() {
                 </Box>
               );
             }
-
+            // Block tĩnh luôn hiển thị bên dưới
             return (
               <Box>
                 {/* Career Overview */}
@@ -591,149 +783,73 @@ function TestResultContent() {
                     {careerDetails.overview}
                   </Typography>
                 </Box>
-
-                {/* Work Environment */}
-                <Box mb={4}>
-                  <Typography variant="h6" gutterBottom>
-                    Môi trường làm việc
-                  </Typography>
-                  <Grid container spacing={3}>
+                {/* Work Environment, Salary, Outlook ... giữ nguyên như cũ ... */}
+                {/* Luôn luôn hiển thị block tĩnh bên dưới */}
+                {(() => {
+                  // Ưu tiên lấy môi trường từ API (result), fallback sang file tĩnh nếu không có
+                  const preferred = result?.work_environment_preferred || careerDetails?.workEnvironment?.preferred || '';
+                  const avoid = result?.work_environment_avoid || careerDetails?.workEnvironment?.avoid || '';
+                  // Nếu không có cả hai thì không render
+                  if (!preferred && !avoid) return null;
+                  return (
+                    <Box display="flex" justifyContent="center" alignItems="stretch">
+                      <Grid container spacing={2} alignItems="stretch">
+                        <Grid item xs={12} md={6}>
+                          <Paper elevation={2} sx={{ p: 3, backgroundColor: 'success.main', color: 'white', height: '100%' }}>
+                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                              ✓ Môi trường phù hợp
+                            </Typography>
+                            <Typography variant="body2">
+                              {preferred}
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Paper elevation={2} sx={{ p: 3, backgroundColor: 'error.main', color: 'white', height: '100%' }}>
+                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                              ✗ Nên tránh
+                            </Typography>
+                            <Typography variant="body2">
+                              {avoid}
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  );
+                })()}
+                <Box display="flex" justifyContent="center" alignItems="stretch" mt={2}>
+                  <Grid container spacing={2} alignItems="stretch">
                     <Grid item xs={12} md={6}>
-                      <Paper elevation={2} sx={{ p: 3, backgroundColor: 'success.main', color: 'white' }}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          ✓ Môi trường phù hợp
+                      <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                        <Typography variant="h6" gutterBottom>
+                          💰 Mức lương tham khảo (VN)
                         </Typography>
-                        <Typography variant="body2">
-                          {careerDetails.workEnvironment.preferred}
-                        </Typography>
+                        <Box>
+                          <Typography variant="body2" gutterBottom>
+                            <strong>Mới vào nghề:</strong> {careerDetails.salary_ranges.entry}
+                          </Typography>
+                          <Typography variant="body2" gutterBottom>
+                            <strong>Có kinh nghiệm:</strong> {careerDetails.salary_ranges.mid}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Cấp cao:</strong> {careerDetails.salary_ranges.senior}
+                          </Typography>
+                        </Box>
                       </Paper>
                     </Grid>
                     <Grid item xs={12} md={6}>
-                      <Paper elevation={2} sx={{ p: 3, backgroundColor: 'error.main', color: 'white' }}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          ✗ Nên tránh
+                      <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                        <Typography variant="h6" gutterBottom>
+                          📊 Triển vọng ngành
                         </Typography>
                         <Typography variant="body2">
-                          {careerDetails.workEnvironment.avoid}
+                          {careerDetails.industry_outlook}
                         </Typography>
                       </Paper>
                     </Grid>
                   </Grid>
                 </Box>
-
-                {/* Ideal Roles by Category */}
-                <Box mb={4}>
-                  <Typography variant="h6" gutterBottom>
-                    Nhóm nghề nghiệp lý tưởng
-                  </Typography>
-                  <Grid container spacing={3}>
-                    {careerDetails.idealRoles.map((roleCategory, index) => (
-                      <Grid item xs={12} md={6} key={index}>
-                        <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-                          <Typography variant="subtitle1" fontWeight="bold" color="primary" gutterBottom>
-                            {roleCategory.category}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" paragraph>
-                            {roleCategory.description}
-                          </Typography>
-                          <Stack direction="row" spacing={1} flexWrap="wrap">
-                            {roleCategory.roles.map((role, roleIndex) => (
-                              <Chip 
-                                key={roleIndex} 
-                                label={role} 
-                                size="small" 
-                                variant="outlined"
-                                color="primary"
-                              />
-                            ))}
-                          </Stack>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
-
-                {/* Strengths & Development Areas */}
-                <Grid container spacing={3} mb={4}>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-                      <Typography variant="h6" gutterBottom color="success.main">
-                        🌟 Điểm mạnh trong công việc
-                      </Typography>
-                      {careerDetails.keyStrengths.map((strength, index) => (
-                        <Box key={index} sx={{ mb: 1 }}>
-                          <Typography variant="body2">
-                            • {strength}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-                      <Typography variant="h6" gutterBottom color="warning.main">
-                        📈 Kỹ năng cần phát triển
-                      </Typography>
-                      {careerDetails.developmentAreas.map((area, index) => (
-                        <Box key={index} sx={{ mb: 1 }}>
-                          <Typography variant="body2">
-                            • {area}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Paper>
-                  </Grid>
-                </Grid>
-
-                {/* Career Tips */}
-                <Box mb={4}>
-                  <Typography variant="h6" gutterBottom>
-                    💡 Lời khuyên phát triển sự nghiệp
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {careerDetails.careerTips.map((tip, index) => (
-                      <Grid item xs={12} sm={6} key={index}>
-                        <Paper elevation={1} sx={{ p: 2, height: '100%' }}>
-                          <Typography variant="body2">
-                            {index + 1}. {tip}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
-
-                {/* Salary & Outlook */}
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={2} sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        💰 Mức lương tham khảo (VN)
-                      </Typography>
-                      <Box>
-                        <Typography variant="body2" gutterBottom>
-                          <strong>Mới vào nghề:</strong> {careerDetails.salary_ranges.entry}
-                        </Typography>
-                        <Typography variant="body2" gutterBottom>
-                          <strong>Có kinh nghiệm:</strong> {careerDetails.salary_ranges.mid}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Cấp cao:</strong> {careerDetails.salary_ranges.senior}
-                        </Typography>
-                      </Box>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={2} sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        📊 Triển vọng ngành
-                      </Typography>
-                      <Typography variant="body2">
-                        {careerDetails.industry_outlook}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
               </Box>
             );
           })()}
@@ -741,13 +857,29 @@ function TestResultContent() {
       </Card>
 
       {/* Save Status Alerts */}
-      {saveSuccess && (
+      {!fromHistory && saveSuccess && (
         <Alert severity="success" sx={{ mb: 3 }}>
           Đã lưu kết quả vào lịch sử tài khoản thành công!
         </Alert>
       )}
       
-      {!isLoggedIn && result?.actual_percentages && (
+      {!fromHistory && autoSaved && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>🎉 Chào mừng trở lại!</strong> Kết quả test của bạn đã được tự động lưu vào lịch sử tài khoản.
+          </Typography>
+        </Alert>
+      )}
+      
+      {!fromHistory && isAlreadySaved && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>✅ Kết quả đã lưu:</strong> Kết quả test này đã được lưu trong lịch sử tài khoản của bạn.
+          </Typography>
+        </Alert>
+      )}
+      
+      {!fromHistory && !isLoggedIn && result?.actual_percentages && (
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
             <strong>💡 Lưu ý:</strong> Bạn chưa đăng nhập. Để lưu kết quả vào lịch sử tài khoản, 
@@ -755,11 +887,29 @@ function TestResultContent() {
           </Typography>
         </Alert>
       )}
+      
+      {/* Thông báo khi xem kết quả từ lịch sử */}
+      {!fromHistory && isLoggedIn && result?.type && !result?.actual_percentages && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>📚 Kết quả từ lịch sử:</strong> Đây là kết quả test đã được lưu trong lịch sử tài khoản của bạn.
+          </Typography>
+        </Alert>
+      )}
+      
+      {!fromHistory && isLoggedIn && result?.actual_percentages && !saveSuccess && !isAlreadySaved && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>💾 Lưu kết quả:</strong> Bạn đã đăng nhập. Để lưu kết quả này vào lịch sử tài khoản, 
+            vui lòng nhấn nút &quot;Lưu vào lịch sử tài khoản&quot; bên dưới.
+          </Typography>
+        </Alert>
+      )}
 
       {/* Action Buttons */}
       <Box textAlign="center" mt={4}>
-        {/* Nút lưu vào lịch sử - luôn hiển thị */}
-        {result?.actual_percentages && (
+        {/* Nút lưu vào lịch sử - chỉ hiển thị khi có dữ liệu thực tế và chưa lưu */}
+        {!fromHistory && result?.actual_percentages && !isAlreadySaved && (
           <Button
             variant="contained"
             size="large"

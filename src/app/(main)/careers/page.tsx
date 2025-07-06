@@ -19,8 +19,10 @@ interface Career {
   _id: string;
   title: string;
   description: string;
+  industry: string;
+  salaryRange: string;
   personalityTypes: string[];
-  skills: string[];
+  skills?: string[];
   education?: string;
   salary?: string;
 }
@@ -37,7 +39,29 @@ const CareersPage = () => {
         const res = await fetch('/api/careers');
         if (!res.ok) throw new Error('Không thể tải danh sách nghề nghiệp');
         const data = await res.json();
-        setCareers(data);
+        // Map dữ liệu từ API sang đúng format UI mong đợi
+        const mapped = data.map((career: {
+          _id: string;
+          title: string;
+          description: string;
+          personalityTypes: string[];
+          requiredSkills?: string[];
+          educationLevel?: string;
+          salaryRange?: {
+            min: number;
+            max: number;
+            currency: string;
+          };
+        }) => ({
+          _id: career._id,
+          title: career.title,
+          description: career.description,
+          personalityTypes: career.personalityTypes,
+          skills: career.requiredSkills,
+          education: career.educationLevel,
+          salary: career.salaryRange ? `${career.salaryRange.min.toLocaleString()} - ${career.salaryRange.max.toLocaleString()} ${career.salaryRange.currency}` : undefined,
+        }));
+        setCareers(mapped);
       } catch {
         setError('Lỗi khi tải danh sách nghề nghiệp');
       } finally {
@@ -48,14 +72,14 @@ const CareersPage = () => {
   }, []);
 
   // Nhóm các nghề nghiệp theo tên, tổng hợp personalityTypes
-  const groupedCareers = careers.reduce((acc, career) => {
-    if (!acc[career.title]) {
-      acc[career.title] = { ...career, personalityTypes: [...career.personalityTypes] };
-    } else {
-      acc[career.title].personalityTypes = Array.from(new Set([...acc[career.title].personalityTypes, ...career.personalityTypes]));
-    }
-    return acc;
-  }, {} as Record<string, Career>);
+      const groupedCareers = careers.reduce((acc: Record<string, Career>, career: Career) => {
+      if (!acc[career.title]) {
+        acc[career.title] = { ...career, personalityTypes: [...career.personalityTypes] };
+      } else {
+        acc[career.title].personalityTypes = Array.from(new Set([...acc[career.title].personalityTypes, ...career.personalityTypes]));
+      }
+      return acc;
+    }, {} as Record<string, Career>);
 
   if (loading) return <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh"><CircularProgress /></Box>;
   if (error) return <Alert severity="error">{error}</Alert>;

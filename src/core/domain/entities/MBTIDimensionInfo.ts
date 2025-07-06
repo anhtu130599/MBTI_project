@@ -52,4 +52,6 @@ export interface PersonalityDetailInfo {
     improvement_skills: string[];
     career_matches: string[];
   };
+  work_environment_preferred: string;
+  work_environment_avoid: string;
 } 

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     let payload;
     try {
       payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    } catch (jwtError) {
+    } catch (_jwtError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     

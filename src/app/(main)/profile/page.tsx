@@ -175,7 +175,7 @@ export default function UserProfilePage() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                           <Button 
                             component={Link} 
-                            href={`${ROUTES.TEST_RESULT}?type=${result.personalityType}`} 
+                            href={`${ROUTES.TEST_RESULT}?type=${result.personalityType}&fromHistory=1`} 
                             variant="outlined"
                             size="small"
                           >

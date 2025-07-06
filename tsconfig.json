@@ -27,6 +27,7 @@
       "@/shared/*": ["./src/shared/*"],
       "@/app/*": ["./src/app/*"],
       "@/models/*": ["./src/core/infrastructure/database/models/*"],
+      "@/models": ["./src/models"],
       "@/lib/*": ["./src/lib/*"],
       "@/utils/*": ["./src/utils/*"],
       "@/middleware/*": ["./src/middleware/*"]

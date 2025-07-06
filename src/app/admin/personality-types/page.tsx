@@ -27,12 +27,20 @@ import EditIcon from '@mui/icons-material/Edit';
 
 interface PersonalityType {
   _id: string;
-  type: string;
-  title: string;
+  code: string;
+  name: string;
   description: string;
-  strengths: string[];
-  weaknesses: string[];
-  careers: string[];
+  strengths: Array<{
+    title: string;
+    description: string;
+    why_explanation: string;
+  }>;
+  weaknesses: Array<{
+    title: string;
+    description: string;
+    why_explanation: string;
+    improvement_advice: string;
+  }>;
 }
 
 export default function AdminPersonalityTypesPage() {
@@ -43,12 +51,9 @@ export default function AdminPersonalityTypesPage() {
   const [selectedType, setSelectedType] = useState<PersonalityType | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    type: '',
-    title: '',
+    code: '',
+    name: '',
     description: '',
-    strengths: '',
-    weaknesses: '',
-    careers: '',
   });
 
   useEffect(() => {
@@ -82,14 +87,16 @@ export default function AdminPersonalityTypesPage() {
   };
 
   const handleEditClick = (type: PersonalityType) => {
+    console.log('Edit personality type:', type);
+    if (!type || !type._id) {
+      setError('Không thể sửa: Dữ liệu loại tính cách bị thiếu hoặc lỗi.');
+      return;
+    }
     setSelectedType(type);
     setFormData({
-      type: type.type,
-      title: type.title,
-      description: type.description,
-      strengths: type.strengths.join('\n'),
-      weaknesses: type.weaknesses.join('\n'),
-      careers: type.careers.join('\n'),
+      code: type.code || '',
+      name: type.name || '',
+      description: type.description || '',
     });
     setDialogOpen(true);
   };
@@ -102,25 +109,34 @@ export default function AdminPersonalityTypesPage() {
 
     try {
       const data = {
-        ...formData,
-        strengths: formData.strengths.split('\n').filter(s => s.trim()),
-        weaknesses: formData.weaknesses.split('\n').filter(s => s.trim()),
-        careers: formData.careers.split('\n').filter(s => s.trim()),
+        code: formData.code,
+        name: formData.name,
+        description: formData.description,
       };
 
       const response = await fetch(`/api/admin/personality-types/${selectedType._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+        credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to save type');
 
       const savedType = await response.json();
+      
+      // Update the types list with the new data
       setTypes(types.map(type => 
-        type._id === selectedType._id ? savedType : type
+        type._id === selectedType._id ? {
+          ...type,
+          code: savedType.type || savedType.code,
+          name: savedType.name,
+          description: savedType.description,
+        } : type
       ));
+      
       setDialogOpen(false);
+      setError(null);
     } catch {
       setError('Lỗi khi lưu loại tính cách');
     }
@@ -141,7 +157,8 @@ export default function AdminPersonalityTypesPage() {
           Quản lý loại tính cách
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          MBTI có cố định 16 loại tính cách. Bạn chỉ có thể chỉnh sửa thông tin mô tả, không thể thêm mới hoặc xóa loại tính cách.
+          MBTI có cố định 16 loại tính cách. Bạn chỉ có thể chỉnh sửa tên và mô tả cơ bản. 
+          Các thông tin chi tiết khác (điểm mạnh, điểm yếu, lời khuyên) cần được chỉnh sửa trực tiếp trong database.
         </Typography>
       </Box>
 
@@ -155,18 +172,28 @@ export default function AdminPersonalityTypesPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Loại</TableCell>
-              <TableCell>Tiêu đề</TableCell>
+              <TableCell>Mã</TableCell>
+              <TableCell>Tên</TableCell>
               <TableCell>Mô tả</TableCell>
-              <TableCell>Thao tác</TableCell>
+              <TableCell width="100">Thao tác</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {types.map((type) => (
               <TableRow key={type._id}>
-                <TableCell>{type.type}</TableCell>
-                <TableCell>{type.title}</TableCell>
-                <TableCell>{type.description}</TableCell>
+                <TableCell>{type.code}</TableCell>
+                <TableCell>{type.name}</TableCell>
+                <TableCell sx={{ maxWidth: 300 }}>
+                  <Typography variant="body2" sx={{ 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}>
+                    {type.description}
+                  </Typography>
+                </TableCell>
                 <TableCell>
                   <IconButton
                     onClick={() => handleEditClick(type)}
@@ -190,54 +217,29 @@ export default function AdminPersonalityTypesPage() {
         <DialogContent>
           <TextField
             margin="dense"
-            label="Loại tính cách"
+            label="Mã loại tính cách"
             fullWidth
-            value={formData.type}
+            value={formData.code}
             disabled
-            helperText="Loại tính cách không thể thay đổi do nghiệp vụ MBTI"
+            helperText="Mã loại tính cách không thể thay đổi do nghiệp vụ MBTI"
           />
           <TextField
             margin="dense"
-            label="Tiêu đề"
+            label="Tên"
             fullWidth
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            helperText="Tên ngắn gọn của loại tính cách (ví dụ: Người truyền cảm hứng)"
           />
           <TextField
             margin="dense"
             label="Mô tả"
             fullWidth
             multiline
-            rows={3}
+            rows={4}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Điểm mạnh (mỗi dòng một điểm)"
-            fullWidth
-            multiline
-            rows={3}
-            value={formData.strengths}
-            onChange={(e) => setFormData({ ...formData, strengths: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Điểm yếu (mỗi dòng một điểm)"
-            fullWidth
-            multiline
-            rows={3}
-            value={formData.weaknesses}
-            onChange={(e) => setFormData({ ...formData, weaknesses: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Nghề nghiệp phù hợp (mỗi dòng một nghề)"
-            fullWidth
-            multiline
-            rows={3}
-            value={formData.careers}
-            onChange={(e) => setFormData({ ...formData, careers: e.target.value })}
+            helperText="Mô tả chi tiết về loại tính cách này"
           />
         </DialogContent>
         <DialogActions>

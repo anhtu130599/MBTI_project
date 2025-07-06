@@ -129,6 +129,14 @@ const PersonalityDetailInfoSchema = new Schema<PersonalityDetailInfoDocument>({
       required: true,
     }],
   },
+  work_environment_preferred: {
+    type: String,
+    required: true,
+  },
+  work_environment_avoid: {
+    type: String,
+    required: true,
+  },
 }, {
   timestamps: true,
   collection: 'personalitydetailinfos'
