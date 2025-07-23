@@ -68,7 +68,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, onSuc
         margin="normal"
         required
         autoComplete="username"
-        helperText="Nhập tên đăng nhập của bạn"
       />
       
       <TextField
